@@ -1,5 +1,8 @@
 export const runtime = "edge";
 
+import { parseAwesomeList } from "@/lib/parser";
+import type { AwesomeCatalog } from "@/types";
+
 /**
  * Read environment variable safely in Edge runtime using globalThis.
  * Avoids direct reference to Node's `process` symbol for type compatibility.
@@ -84,6 +87,14 @@ function base64ToUtf8(b64: string): string {
 }
 
 /**
+ * Persist the parsed catalog and its metadata into KV.
+ */
+async function persistCatalog(catalog: AwesomeCatalog) {
+  const CATALOG_KEY = "awesome:catalog";
+  await kvSetJSON(CATALOG_KEY, catalog);
+}
+
+/**
  * Fetch the Awesome repo's README.md (main) via GitHub.
  * Prefers the raw GitHub content URL with Authorization to reduce rate limits.
  */
@@ -124,33 +135,30 @@ async function fetchAwesomeReadme(): Promise<{ content: string; source: string }
 }
 
 /**
- * Persist the fetched README and a small metadata object into KV.
- */
-async function persistReadme(markdown: string) {
-  const now = new Date().toISOString();
-  const RAW_KEY = "awesome:readme:raw";
-  const META_KEY = "awesome:readme:meta";
-
-  await kvSetString(RAW_KEY, markdown);
-  await kvSetJSON(META_KEY, {
-    updatedAt: now,
-    length: markdown.length,
-    version: 1,
-  });
-}
-
-/**
- * Cron entry: Pull latest content from GitHub and store to KV.
+ * Cron entry: Pull latest content from GitHub, parse it, and store to KV.
  */
 export async function POST(req: Request) {
   const guard = await verifyCronSecret(req);
   if (guard) return guard;
 
   try {
+    // 1. Fetch
     const { content, source } = await fetchAwesomeReadme();
-    await persistReadme(content);
+
+    // 2. Parse
+    const catalog = await parseAwesomeList(content);
+
+    // 3. Persist
+    await persistCatalog(catalog);
+
+    const { meta } = catalog;
     return new Response(
-      JSON.stringify({ ok: true, source, stored: true }),
+      JSON.stringify({
+        ok: true,
+        source,
+        stored: true,
+        meta,
+      }),
       { status: 200, headers: { "content-type": "application/json" } }
     );
   } catch (err) {
