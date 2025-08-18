@@ -1,5 +1,5 @@
 /**
- * Represents a link item in the awesome list
+ * Represents a link item in the awesome list.
  */
 export interface AwesomeItem {
   title: string;
@@ -10,23 +10,21 @@ export interface AwesomeItem {
 }
 
 /**
- * Represents a category in the awesome list
+ * Represents a category in the awesome list, which can have nested children.
  */
 export interface AwesomeCategory {
   title: string;
+  slug: string;
   items: AwesomeItem[];
-  subcategories?: {
-    [key: string]: AwesomeItem[];
-  };
+  children: AwesomeCategory[];
 }
 
 /**
- * Represents the full catalog structure
+ * Represents the full catalog structure with a tree and a flat list.
  */
 export interface AwesomeCatalog {
-  categories: {
-    [key: string]: AwesomeCategory;
-  };
+  tree: AwesomeCategory[];
+  list: AwesomeItem[];
   meta: {
     updatedAt: string;
     totalItems: number;
@@ -35,7 +33,7 @@ export interface AwesomeCatalog {
 }
 
 /**
- * Search result item with highlighting
+ * Search result item with highlighting.
  */
 export interface SearchResultItem extends AwesomeItem {
   matches?: {

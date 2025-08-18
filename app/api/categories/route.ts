@@ -5,6 +5,7 @@ export const runtime = "edge";
 
 /**
  * API route to fetch a list of all categories and subcategories.
+ * This aligns with the AwesomeCatalog "tree" structure and includes slugs.
  */
 export async function GET() {
   try {
@@ -16,9 +17,14 @@ export async function GET() {
       );
     }
 
-    const categories = Object.values(catalog.categories).map((cat) => ({
+    // Build a lightweight categories response with nested subcategories and slugs
+    const categories = catalog.tree.map((cat) => ({
       title: cat.title,
-      subcategories: Object.keys(cat.subcategories || {}),
+      slug: cat.slug,
+      subcategories: (cat.children || []).map((sc) => ({
+        title: sc.title,
+        slug: sc.slug,
+      })),
     }));
 
     return NextResponse.json({ ok: true, data: categories });

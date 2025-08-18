@@ -1,18 +1,9 @@
 export const runtime = "edge";
 
+import { getStoredEtag, persistCatalog, storeEtag } from "@/lib/kv";
 import { parseAwesomeList } from "@/lib/parser";
+import { getEnv } from "@/lib/utils";
 import type { AwesomeCatalog } from "@/types";
-
-/**
- * Read environment variable safely in Edge runtime using globalThis.
- * Avoids direct reference to Node's `process` symbol for type compatibility.
- */
-function getEnv(name: string): string {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const env = (globalThis as any)?.process?.env ?? {};
-  const value = env[name];
-  return typeof value === "string" ? value.trim() : "";
-}
 
 /**
  * Verify the Cron secret from request headers.
@@ -37,46 +28,6 @@ async function verifyCronSecret(req: Request): Promise<Response | null> {
 }
 
 /**
- * Resolve the best available REST URL and token for Upstash/Vercel KV.
- * Supports both KV_* and UPSTASH_* env variable names.
- */
-function resolveKvEnv(): { url: string; token: string } {
-  const url = getEnv("KV_REST_API_URL") || getEnv("UPSTASH_REDIS_REST_URL");
-  const token = getEnv("KV_REST_API_TOKEN") || getEnv("UPSTASH_REDIS_REST_TOKEN");
-  if (!url || !token) {
-    throw new Error("KV REST URL or TOKEN is missing. Ensure KV is connected and envs are set.");
-  }
-  return { url, token };
-}
-
-/**
- * Store a plain string value in KV by REST API.
- * This uses Upstash Redis REST protocol: POST body is the value, path is /set/<key>
- */
-async function kvSetString(key: string, value: string): Promise<void> {
-  const { url, token } = resolveKvEnv();
-  const endpoint = `${url.replace(/\/$/, "")}/set/${encodeURIComponent(key)}`;
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    body: value,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`KV set failed: ${res.status} ${res.statusText} ${text}`);
-  }
-}
-
-/**
- * Store a JSON-serializable value in KV by converting it to string first.
- */
-async function kvSetJSON(key: string, data: unknown): Promise<void> {
-  await kvSetString(key, JSON.stringify(data));
-}
-
-/**
  * Decode base64 string to UTF-8 using Web APIs (Edge compatible).
  */
 function base64ToUtf8(b64: string): string {
@@ -87,41 +38,47 @@ function base64ToUtf8(b64: string): string {
 }
 
 /**
- * Persist the parsed catalog and its metadata into KV.
- */
-async function persistCatalog(catalog: AwesomeCatalog) {
-  const CATALOG_KEY = "awesome:catalog";
-  await kvSetJSON(CATALOG_KEY, catalog);
-}
-
-/**
  * Fetch the Awesome repo's README.md (main) via GitHub.
  * Prefers the raw GitHub content URL with Authorization to reduce rate limits.
  */
-async function fetchAwesomeReadme(): Promise<{ content: string; source: string }> {
+async function fetchAwesomeReadme(): Promise<{
+  content: string;
+  source: string;
+  etag: string | null;
+  isModified: boolean;
+}> {
   const token = getEnv("GITHUB_TOKEN");
+  const lastEtag = await getStoredEtag();
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
+  if (lastEtag) headers["If-None-Match"] = lastEtag;
   headers["User-Agent"] = "vscodehub-sync-bot";
 
   // Try the raw content URL first
   const rawUrl =
     "https://raw.githubusercontent.com/sindresorhus/awesome/main/readme.md";
   const rawRes = await fetch(rawUrl, { headers });
+
+  const etag = rawRes.headers.get("etag");
+  if (rawRes.status === 304) {
+    return { content: "", source: "raw", etag, isModified: false };
+  }
+
   if (rawRes.ok) {
     const md = await rawRes.text();
-    return { content: md, source: "raw" };
+    return { content: md, source: "raw", etag, isModified: true };
   }
 
   // Fallback to GitHub Contents API
   const apiUrl =
     "https://api.github.com/repos/sindresorhus/awesome/contents/readme.md?ref=main";
-  const apiRes = await fetch(apiUrl, {
-    headers: {
-      ...headers,
-      Accept: "application/vnd.github+json",
-    },
-  });
+  const apiRes = await fetch(apiUrl, { headers });
+
+  const apiEtag = apiRes.headers.get("etag");
+  if (apiRes.status === 304) {
+    return { content: "", source: "api", etag: apiEtag, isModified: false };
+  }
+
   if (!apiRes.ok) {
     const text = await apiRes.text().catch(() => "");
     throw new Error(`GitHub fetch failed: ${apiRes.status} ${apiRes.statusText} ${text}`);
@@ -131,7 +88,7 @@ async function fetchAwesomeReadme(): Promise<{ content: string; source: string }
     throw new Error("Unexpected GitHub API response shape for README content.");
   }
   const decoded = base64ToUtf8(json.content);
-  return { content: decoded, source: "api" };
+  return { content: decoded, source: "api", etag: apiEtag, isModified: true };
 }
 
 /**
@@ -143,13 +100,23 @@ export async function POST(req: Request) {
 
   try {
     // 1. Fetch
-    const { content, source } = await fetchAwesomeReadme();
+    const { content, source, etag, isModified } = await fetchAwesomeReadme();
+
+    if (!isModified) {
+      return new Response(
+        JSON.stringify({ ok: true, source, stored: false, message: "Not modified" }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      );
+    }
 
     // 2. Parse
     const catalog = await parseAwesomeList(content);
 
     // 3. Persist
     await persistCatalog(catalog);
+    if (etag) {
+      await storeEtag(etag);
+    }
 
     const { meta } = catalog;
     return new Response(
