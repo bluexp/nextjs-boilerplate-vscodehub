@@ -32,7 +32,7 @@ function GlobalHeader() {
           <div className="flex items-center gap-2">
             {/* GitHub */}
             <a
-              href="https://github.com/vscodehub/awesome-ai-catalog"
+              href="https://github.com/bluexp/nextjs-boilerplate-vscodehub"
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Open GitHub repository"

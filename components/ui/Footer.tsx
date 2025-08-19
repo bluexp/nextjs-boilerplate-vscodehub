@@ -72,6 +72,15 @@ export function Footer() {
               >
                 Sitemap
               </Link>
+              <Link
+                href="https://creativecommons.org/publicdomain/zero/1.0/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
+              >
+                CC0 1.0 Universal
+                <ExternalLink className="h-3 w-3" />
+              </Link>
             </div>
           </div>
         </div>

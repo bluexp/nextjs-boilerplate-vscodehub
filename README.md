@@ -1,61 +1,66 @@
 # VSCodeHub — Awesome AI Catalog
+[![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
 
-一个基于 Next.js App Router 的开源目录应用，提供分类浏览、全文搜索、主题切换与边缘运行时（Edge Runtime）加速。
+An open-source catalog application built with Next.js App Router. It features categorized browsing, full‑text search, theme switching, and Edge Runtime acceleration.
 
-## 技术栈
-- Next.js 15（App Router, Edge Runtime）
-- TypeScript + Tailwind 风格样式
-- next-themes（系统/亮/暗主题）
-- Upstash Redis（KV 数据存储，REST API）
+- English (default) | [中文文档](./README.zh-CN.md)
 
-## 快速开始
-1. 安装依赖并启动开发服务器：
+## Tech Stack
+- Next.js 15 (App Router, Edge Runtime)
+- TypeScript + Tailwind-based styling
+- next-themes (system/light/dark)
+- Upstash Redis (KV via REST API)
+
+## Getting Started
+1) Install dependencies and start the dev server:
 ```bash
 npm i
 npm run dev
-# 打开 http://localhost:3000
+# Open http://localhost:3000
 ```
-2. 配置环境变量（创建 .env.local）：
+
+2) Configure environment variables (create .env.local):
 ```bash
-# 二选一：使用 KV_* 或 UPSTASH_*（推荐使用你的 Upstash Redis REST 凭据）
+# Choose ONE of the following (KV_* or UPSTASH_*). Using your Upstash Redis REST credentials is recommended.
 KV_REST_API_URL=...
 KV_REST_API_TOKEN=...
-# 或
+# OR
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
 
-# 可选：用于提升 GitHub 拉取频率限制
+# Optional: increase GitHub API rate limits for syncing
 GITHUB_TOKEN=...
 
-# 仅生产使用：用于 /api/admin/sync 鉴权（Cron 触发）
+# Production only: auth secret for /api/admin/sync (Cron trigger)
 CRON_SECRET=your-strong-secret
 ```
-3. 初始化数据（同步 Awesome 列表）：
-- 本地开发环境可直接访问（开发模式跳过鉴权）：
-  - GET/POST `http://localhost:3000/api/admin/sync?force=1`
-- 看到响应 `{"ok": true, "stored": true}` 即同步成功。
 
-4. 验证 API：
+3) Initialize data (sync Awesome list):
+- For local development (auth bypassed in dev):
+  - GET/POST `http://localhost:3000/api/admin/sync?force=1`
+- Expect a successful response like: `{ "ok": true, "stored": true }`.
+
+4) Verify APIs:
 ```bash
-# 目录
+# Catalog
 curl http://localhost:3000/api/catalog
-# 分类
+# Categories
 curl http://localhost:3000/api/categories
-# 搜索
+# Search
 curl "http://localhost:3000/api/search?q=react"
 ```
 
-## 健康检查（生产可用）
-- 路径：`/api/health`
-- 含义：
-  - HTTP 200：健康；`details.kv=connected`，`details.catalog=ready/empty`（空仅提示，不代表失败）
-  - HTTP 503：不健康（KV 配置/连接失败）
+## Health Check (Production-ready)
+- Endpoint: `/api/health`
+- Semantics:
+  - HTTP 200: healthy; `details.kv=connected`, `details.catalog=ready/empty` (empty is a hint, not a failure)
+  - HTTP 503: unhealthy (KV misconfigured or unreachable)
 
-## 同步任务（生产环境）
-- 端点：`/api/admin/sync`（GET/POST 均可）
-- 鉴权（仅生产）：
-  - Header: `x-cron-secret: <CRON_SECRET>` 或 `Authorization: Bearer <CRON_SECRET>`
-- 定时：项目包含 `vercel.json` 中的 Cron 配置示例（每 12 小时）：
+## Scheduled Sync (Production)
+- Endpoint: `/api/admin/sync` (supports GET/POST)
+- Auth in production:
+  - Header: `x-cron-secret: <CRON_SECRET>` or `Authorization: Bearer <CRON_SECRET>`
+- Cron: see the example in `vercel.json` (runs every 12 hours):
 ```json
 {
   "crons": [
@@ -63,21 +68,25 @@ curl "http://localhost:3000/api/search?q=react"
   ]
 }
 ```
-提示：如在 Vercel 控制台使用 Cron Jobs，可设置自定义 Header 传递 `x-cron-secret`。
+Tip: If you configure Cron Jobs in Vercel dashboard, add the `x-cron-secret` header.
 
-## 常见问题（Troubleshooting）
+## Troubleshooting
 - `GET /api/catalog 404 {"error":"Catalog not found. Run sync first."}`
-  - 说明：API 正常，但 KV 尚未写入数据。解决：先触发 `/api/admin/sync?force=1`。
+  - API is fine but KV has no data yet. Run `/api/admin/sync?force=1` first.
 - `GET /@vite/client 404`
-  - 开发环境下无害日志，可忽略。
-- GitHub 速率限制
-  - 建议配置 `GITHUB_TOKEN` 以提升拉取频率上限。
-- KV 连接失败（/api/health 返回 503）
-  - 检查 `KV_REST_API_URL/TOKEN` 或 `UPSTASH_REDIS_REST_URL/TOKEN` 是否正确。
+  - Benign log in dev; safe to ignore.
+- GitHub rate limit
+  - Configure `GITHUB_TOKEN` to increase API limits.
+- KV connection failure (`/api/health` returns 503)
+  - Check `KV_REST_API_URL/TOKEN` or `UPSTASH_REDIS_REST_URL/TOKEN`.
 
-## 开发说明
-- 主题切换：右上角按钮，使用 next-themes，默认跟随系统，可手动切换亮/暗。
-- 首页头部：滚动透明效果，滚动超 80px 自动显示背景与阴影。
+## Development Notes
+- Theme toggle: top-right switch using next-themes; follows system by default, can be toggled to light/dark.
+- Home header: transparent on top; after ~80px scroll, background and shadow appear.
 
-## 许可
-MIT
+## License
+CC0 1.0 Universal
+
+- Summary: No rights reserved; as close as possible to public domain.
+- Deed: https://creativecommons.org/publicdomain/zero/1.0/
+- Legalcode: https://creativecommons.org/publicdomain/zero/1.0/legalcode
