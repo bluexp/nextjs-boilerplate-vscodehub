@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/Button";
 
 /**
  * ThemeToggle button that switches between light and dark mode.
- * Adds accessible labels and pressed state for better a11y.
- * To avoid hydration mismatch, it renders only after client mounts.
+ * - Uses resolvedTheme to correctly reflect the active theme when default is "system".
+ * - Adds accessible labels and pressed state for better a11y.
+ * - To avoid hydration mismatch, it renders only after client mounts.
  */
 export function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
@@ -20,7 +21,7 @@ export function ThemeToggle() {
   // Avoid SSR/CSR mismatch by rendering only after mount
   if (!mounted) return null;
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
 
   return (
     <Button
