@@ -172,3 +172,5 @@ export async function getStoredEtag(): Promise<string | null> {
 export async function storeEtag(etag: string) {
   await kvSetString(ETAG_KEY, etag);
 }
+
+export { kvGet, kvSetJSON };

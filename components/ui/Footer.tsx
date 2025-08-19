@@ -1,5 +1,6 @@
 import { Github, Heart, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { NewsletterForm } from "@/components/ui/NewsletterForm";
 
 /**
  * Global footer component with copyright, attribution, and links
@@ -12,7 +13,7 @@ export function Footer() {
     <footer className="mt-16 border-t border-border/50 bg-card/30">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {/* Brand Information */}
+          {/* Brand Information + Newsletter */}
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-secondary shadow-sm" />
@@ -23,6 +24,11 @@ export function Footer() {
             <p className="text-sm text-muted-foreground">
               Developer resource hub with curated tools and libraries
             </p>
+            <div className="pt-2">
+              <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
+              <p className="mb-2 text-sm text-muted-foreground">Get updates when we add new resources</p>
+              <NewsletterForm />
+            </div>
           </div>
 
           {/* Data Source Attribution */}
@@ -73,12 +79,12 @@ export function Footer() {
                 Sitemap
               </Link>
               <Link
-                href="https://creativecommons.org/publicdomain/zero/1.0/"
+                href="https://github.com/bluexp/nextjs-boilerplate-vscodehub/issues/new?template=submit-resource.yml"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
               >
-                CC0 1.0 Universal
+                Submit Resource
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </div>

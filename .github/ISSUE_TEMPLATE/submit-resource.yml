@@ -1,0 +1,42 @@
+name: "Submit Resource"
+description: "Suggest a new awesome resource to add to the catalog"
+labels: ["submission"]
+body:
+  - type: input
+    id: title
+    attributes:
+      label: Resource Title
+      description: The name of the resource
+      placeholder: e.g., Awesome Library
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: The canonical link to the resource
+      placeholder: https://example.com
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Select the closest category
+      options:
+        - AI
+        - Web Development
+        - DevOps
+        - Security
+        - Data Engineering
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Why is this awesome?
+      description: Briefly describe what this resource does and why it's valuable
+      placeholder: Short description...
+    validations:
+      required: true

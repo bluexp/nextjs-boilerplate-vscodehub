@@ -4,6 +4,7 @@ import type { AwesomeCategory } from "@/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryPageClient from "@/components/CategoryPageClient";
+import Script from "next/script";
 
 /**
  * Finds a category by its slug in a tree of categories.
@@ -70,9 +71,35 @@ export async function generateMetadata({
     return {};
   }
 
+  const title = `${category.title} | VSCodeHub`;
+  const description = `A curated list of awesome resources in the ${category.title} category.`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const url = `${siteUrl}/categories/${slug}`;
+
   return {
-    title: `${category.title} | Awesome List`,
-    description: `A curated list of awesome things in the ${category.title} category.`,
+    title,
+    description,
+    alternates: { canonical: `/categories/${slug}` },
+    openGraph: {
+      title,
+      description,
+      url: `/categories/${slug}`,
+      type: "website",
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(category.title)}`,
+          width: 1200,
+          height: 630,
+          alt: category.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [`/api/og?title=${encodeURIComponent(category.title)}`],
+    },
   };
 }
 
@@ -105,15 +132,41 @@ export default async function CategoryPage({
     ...path!.map((c) => ({ href: `/categories/${c.slug}`, label: c.title })),
   ];
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbs.map((b, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: b.label,
+      item: `${siteUrl}${b.href}`,
+    })),
+  };
+
+  const collectionLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: category!.title,
+    url: `${siteUrl}/categories/${slug}`,
+    description: `A curated list of awesome resources in the ${category!.title} category.`,
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
+      <Script id="ld-breadcrumb" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify(breadcrumbLd)}
+      </Script>
+      <Script id="ld-collection" type="application/ld+json" strategy="afterInteractive">
+        {JSON.stringify(collectionLd)}
+      </Script>
       <Breadcrumbs items={breadcrumbs} />
       <header className="my-8 text-center">
         <h1 className="text-5xl font-extrabold tracking-tight">
           {category.title}
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          {`A curated list of awesome things in the ${category.title} category.`}
+          {`A curated list of awesome resources in the ${category.title} category.`}
         </p>
       </header>
 

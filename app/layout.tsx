@@ -6,6 +6,7 @@ import { Footer } from "@/components/ui/Footer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { HeaderScrollController } from "@/components/ui/HeaderScrollController";
 import Link from "next/link";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,6 +14,46 @@ export const metadata: Metadata = {
   title: "VSCodeHub — Awesome Catalog",
   description:
     "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
+  keywords: [
+    "awesome list",
+    "developer tools",
+    "libraries",
+    "frameworks",
+    "resources",
+    "VSCodeHub",
+    "AI",
+  ],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: "VSCodeHub — Awesome Catalog",
+    siteName: "VSCodeHub",
+    description:
+      "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
+    images: [
+      {
+        url: "/api/og?title=VSCodeHub%20%E2%80%94%20Awesome%20Catalog",
+        width: 1200,
+        height: 630,
+        alt: "VSCodeHub — Awesome Catalog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VSCodeHub — Awesome Catalog",
+    description:
+      "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
+    images: ["/api/og?title=VSCodeHub%20%E2%80%94%20Awesome%20Catalog"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 /**
@@ -59,6 +100,25 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const websiteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "VSCodeHub",
+    url: siteUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "VSCodeHub",
+    url: siteUrl,
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
@@ -66,7 +126,7 @@ export default function RootLayout({
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-primary-foreground focus:shadow-lg"
-        >
+       >
           Skip to content
         </a>
         {/* Theme provider wraps the entire app */}
@@ -75,6 +135,13 @@ export default function RootLayout({
           <HeaderScrollController />
           {/* Global Header */}
           <GlobalHeader />
+          {/* JSON-LD: WebSite and Organization */}
+          <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
+            {JSON.stringify(websiteLd)}
+          </Script>
+          <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
+            {JSON.stringify(orgLd)}
+          </Script>
           {/* Main content area with landmark and target for skip link */}
           <main id="content" tabIndex={-1}>
             {children}
