@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { Footer } from "@/components/ui/Footer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { HeaderScrollController } from "@/components/ui/HeaderScrollController";
+import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,9 +27,10 @@ function GlobalHeader() {
     >
       <div className="container mx-auto px-4">
         <div className="flex h-14 items-center justify-between">
-          <a href="/" className="flex items-center gap-2 font-semibold">
+          {/* Use Next.js Link for internal navigation to avoid full reloads */}
+          <Link href="/" className="flex items-center gap-2 font-semibold">
             <span className="select-none">Awesome AI Catalog</span>
-          </a>
+          </Link>
           <div className="flex items-center gap-2">
             {/* GitHub */}
             <a
