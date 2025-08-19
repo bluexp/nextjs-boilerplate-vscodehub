@@ -12,12 +12,12 @@ export function HeaderScrollController() {
   const isHomePage = pathname === "/";
 
   useEffect(() => {
-    const header = document.querySelector("header");
+    const header = document.getElementById("global-header");
     if (!header) return;
 
     // Set home page attribute
     if (isHomePage) {
-      header.setAttribute("data-home-page", "");
+      header.setAttribute("data-home-page", "true");
     } else {
       header.removeAttribute("data-home-page");
     }
@@ -30,15 +30,20 @@ export function HeaderScrollController() {
 
     /**
      * Handle scroll events to show/hide header background on home page.
-     * Shows background after scrolling past initial viewport height.
+     * Uses rAF throttling and triggers after ~80px scroll to reduce visual noise.
      */
+    let raf = 0;
     const handleScroll = () => {
-      const scrolled = window.scrollY > 100;
-      if (scrolled) {
-        header.setAttribute("data-scrolled", "");
-      } else {
-        header.removeAttribute("data-scrolled");
-      }
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        const scrolled = window.scrollY > 80;
+        if (scrolled) {
+          header.setAttribute("data-scrolled", "true");
+        } else {
+          header.removeAttribute("data-scrolled");
+        }
+        raf = 0;
+      });
     };
 
     // Initial check
@@ -48,6 +53,7 @@ export function HeaderScrollController() {
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
+      if (raf) cancelAnimationFrame(raf);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [isHomePage]);

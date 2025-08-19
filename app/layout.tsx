@@ -4,7 +4,6 @@ import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Footer } from "@/components/ui/Footer";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
-import { Github } from "lucide-react";
 import { HeaderScrollController } from "@/components/ui/HeaderScrollController";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -21,28 +20,25 @@ export const metadata: Metadata = {
  */
 function GlobalHeader() {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-sm transition-all duration-200 
-                     data-[home-page]:border-transparent data-[home-page]:bg-transparent 
-                     data-[home-page]:backdrop-blur-none data-[home-page]:supports-[backdrop-filter]:bg-background/0
-                     data-[scrolled]:border-border/50 data-[scrolled]:bg-background/80 data-[scrolled]:backdrop-blur-sm">
-      <div className="container mx-auto max-w-7xl px-4 lg:px-6">
+    <header
+      id="global-header"
+      className="sticky top-0 z-40 w-full border-b border-transparent bg-transparent/0 backdrop-blur-0 transition-all data-[home-page=true]:bg-transparent/0 data-[home-page=true]:backdrop-blur-0 data-[scrolled=true]:bg-background/80 data-[scrolled=true]:backdrop-blur-md data-[scrolled=true]:border-border/50 motion-reduce:transition-none data-[scrolled=true]:shadow-sm"
+    >
+      <div className="container mx-auto px-4">
         <div className="flex h-14 items-center justify-between">
-          <a href="/" className="flex items-center gap-2 transition-colors hover:opacity-80">
-            <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-secondary shadow-sm" />
-            <span className="hidden text-sm font-semibold tracking-wide text-foreground/90 sm:inline-block">
-              vscodehub.com
-            </span>
+          <a href="/" className="flex items-center gap-2 font-semibold">
+            <span className="select-none">Awesome AI Catalog</span>
           </a>
-          
           <div className="flex items-center gap-2">
+            {/* GitHub */}
             <a
-              href="https://github.com/sindresorhus/awesome"
+              href="https://github.com/vscodehub/awesome-ai-catalog"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Open GitHub repository"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-sm font-medium transition-colors"
             >
-              <Github className="h-4 w-4" />
-              <span className="sr-only sm:not-sr-only">Awesome</span>
+              GitHub
             </a>
             <ThemeToggle />
           </div>
@@ -63,13 +59,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-background text-foreground`}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <body className={inter.className}>
+        {/* Skip link for keyboard users */}
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-primary-foreground focus:shadow-lg"
+        >
+          Skip to content
+        </a>
+        {/* Theme provider wraps the entire app */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          {/* Control header transparency on homepage */}
           <HeaderScrollController />
+          {/* Global Header */}
           <GlobalHeader />
-          
-          {/* Each page renders its own breadcrumbs: see MainPage and CategoryPage */}
-          {children}
+          {/* Main content area with landmark and target for skip link */}
+          <main id="content" tabIndex={-1}>
+            {children}
+          </main>
           <Footer />
         </ThemeProvider>
       </body>
