@@ -3,7 +3,7 @@ import Link from "next/link";
 
 /**
  * Global footer component with copyright, attribution, and links
- * 全站页脚组件，包含版权信息、数据来源致谢和相关链接
+ * Provides site-wide footer with branding, data source acknowledgment, and relevant links
  */
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -12,7 +12,7 @@ export function Footer() {
     <footer className="mt-16 border-t border-border/50 bg-card/30">
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-          {/* 品牌信息 */}
+          {/* Brand Information */}
           <div className="flex flex-col space-y-3">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-md bg-gradient-to-br from-primary to-secondary shadow-sm" />
@@ -21,17 +21,17 @@ export function Footer() {
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
-              开发者资源导航站，精选优质工具与库
+              Developer resource hub with curated tools and libraries
             </p>
           </div>
 
-          {/* 数据来源致谢 */}
+          {/* Data Source Attribution */}
           <div className="flex flex-col space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">数据来源</h3>
+            <h3 className="text-sm font-semibold text-foreground">Data Source</h3>
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Heart className="h-4 w-4 text-red-500" />
-                <span>基于</span>
+                <span>Based on</span>
                 <Link
                   href="https://github.com/sindresorhus/awesome"
                   target="_blank"
@@ -42,13 +42,13 @@ export function Footer() {
                   <ExternalLink className="h-3 w-3" />
                 </Link>
               </div>
-              <p>遵循 CC0-1.0 许可证，每日自动同步</p>
+              <p>Following CC0-1.0 license, synced daily</p>
             </div>
           </div>
 
-          {/* 相关链接 */}
+          {/* Related Links */}
           <div className="flex flex-col space-y-3">
-            <h3 className="text-sm font-semibold text-foreground">相关链接</h3>
+            <h3 className="text-sm font-semibold text-foreground">Related Links</h3>
             <div className="space-y-2 text-sm">
               <Link
                 href="https://github.com/sindresorhus/awesome"
@@ -57,26 +57,26 @@ export function Footer() {
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
               >
                 <Github className="h-4 w-4" />
-                Awesome 项目
+                Awesome Project
                 <ExternalLink className="h-3 w-3" />
               </Link>
               <Link
                 href="/api/admin/sync"
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
               >
-                数据同步状态
+                Data Sync Status
               </Link>
               <Link
                 href="/sitemap.xml"
                 className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground"
               >
-                网站地图
+                Sitemap
               </Link>
             </div>
           </div>
         </div>
 
-        {/* 版权信息 */}
+        {/* Copyright Information */}
         <div className="mt-8 flex flex-col items-center justify-between border-t border-border/30 pt-6 text-sm text-muted-foreground md:flex-row">
           <p>
             © {currentYear} vscodehub.com. Built with{" "}
@@ -100,7 +100,7 @@ export function Footer() {
             .
           </p>
           <p className="mt-2 md:mt-0">
-            致敬所有开源贡献者 🚀
+            Honoring all open source contributors 🚀
           </p>
         </div>
       </div>

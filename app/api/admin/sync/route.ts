@@ -1,6 +1,6 @@
 export const runtime = "edge";
 
-import { getStoredEtag, persistCatalog, storeEtag } from "@/lib/kv";
+import { getStoredEtag, persistCatalog, storeEtag, getCatalog } from "@/lib/kv";
 import { parseAwesomeList } from "@/lib/parser";
 import { getEnv } from "@/lib/utils";
 import type { AwesomeCatalog } from "@/types";
@@ -10,9 +10,17 @@ import type { AwesomeCatalog } from "@/types";
  * Supports two auth schemes:
  * 1) x-cron-secret: <CRON_SECRET> (for Settings → Cron Jobs with custom header)
  * 2) Authorization: Bearer <CRON_SECRET> (for vercel.json crons)
+ *
+ * Dev convenience: In non-production (NODE_ENV !== 'production'),
+ * we bypass auth to make local data seeding smoother.
+ * Skip validation only in development; keep strict validation in production.
+ *
  * Returns a Response if unauthorized/misconfigured; otherwise returns null to proceed.
  */
 async function verifyCronSecret(req: Request): Promise<Response | null> {
+  if (process.env.NODE_ENV !== "production") {
+    return null; // dev-only bypass
+  }
   const secret = getEnv("CRON_SECRET");
   if (!secret) {
     return new Response("Missing CRON_SECRET on server", { status: 500 });
@@ -29,6 +37,8 @@ async function verifyCronSecret(req: Request): Promise<Response | null> {
 
 /**
  * Decode base64 string to UTF-8 using Web APIs (Edge compatible).
+ * @param b64 Base64-encoded string from GitHub Contents API
+ * @returns Decoded UTF-8 string
  */
 function base64ToUtf8(b64: string): string {
   const bin = atob(b64);
@@ -40,15 +50,21 @@ function base64ToUtf8(b64: string): string {
 /**
  * Fetch the Awesome repo's README.md (main) via GitHub.
  * Prefers the raw GitHub content URL with Authorization to reduce rate limits.
+ *
+ * When force is true, we will NOT send If-None-Match to bypass 304 and fetch fresh content.
+ * This helps recover from cases where ETag exists but catalog was never persisted.
+ *
+ * @param force Whether to bypass conditional request with ETag and force a fresh fetch
+ * @returns The markdown content, source used, etag, and whether the content was modified
  */
-async function fetchAwesomeReadme(): Promise<{
+async function fetchAwesomeReadme(force = false): Promise<{
   content: string;
   source: string;
   etag: string | null;
   isModified: boolean;
 }> {
   const token = getEnv("GITHUB_TOKEN");
-  const lastEtag = await getStoredEtag();
+  const lastEtag = force ? null : await getStoredEtag();
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
   if (lastEtag) headers["If-None-Match"] = lastEtag;
@@ -93,14 +109,34 @@ async function fetchAwesomeReadme(): Promise<{
 
 /**
  * Cron entry: Pull latest content from GitHub, parse it, and store to KV.
+ *
+ * Supports an optional query string `?force=1` (or header `x-force-sync: 1`) to bypass ETag and
+ * force a fresh fetch+persist. This is useful when the ETag exists but the catalog key is missing.
+ *
+ * @param req Incoming Request to the sync endpoint
+ * @returns JSON Response indicating whether data was stored
  */
 export async function POST(req: Request) {
   const guard = await verifyCronSecret(req);
   if (guard) return guard;
 
   try {
+    // Force flag via query or header
+    const url = new URL(req.url);
+    const forceQS = url.searchParams.get("force");
+    const forceHeader = req.headers.get("x-force-sync");
+    const force = forceQS === "1" || forceQS === "true" || forceHeader === "1" || forceHeader === "true";
+
     // 1. Fetch
-    const { content, source, etag, isModified } = await fetchAwesomeReadme();
+    let { content, source, etag, isModified } = await fetchAwesomeReadme(force);
+
+    // If not modified, but catalog is missing, do a one-time forced fetch to heal state
+    if (!isModified) {
+      const existing = await getCatalog();
+      if (!existing) {
+        ({ content, source, etag, isModified } = await fetchAwesomeReadme(true));
+      }
+    }
 
     if (!isModified) {
       return new Response(
@@ -140,6 +176,10 @@ export async function POST(req: Request) {
 
 /**
  * Optional GET for manual triggering or vercel.json crons (uses Authorization header).
+ * Mirrors POST behavior, including support for `?force=1`.
+ *
+ * @param req Incoming Request
+ * @returns Same as POST()
  */
 export async function GET(req: Request) {
   return POST(req);
