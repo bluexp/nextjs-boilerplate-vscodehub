@@ -1,5 +1,7 @@
 # VSCodeHub — Awesome AI Catalog
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
+该项目是依托GPT-5自动化编程的项目
+This project is built with GPT‑5-assisted automated programming.
 
 An open-source catalog application built with Next.js App Router. It features categorized browsing, full‑text search, theme switching, and Edge Runtime acceleration.
 
