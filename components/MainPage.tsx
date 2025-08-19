@@ -94,7 +94,7 @@ function getHomeBreadcrumbItems(searchQuery: string, hasFiltered: boolean) {
  * Features: real-time search, category browsing, and sidebar navigation
  * Features: real-time search, category browsing, sidebar navigation
  */
-export default function MainPage({ initialCatalog }: { initialCatalog?: AwesomeCatalog }) {
+export default function MainPage({ initialCatalog, heroTagline }: { initialCatalog?: AwesomeCatalog; heroTagline?: string }) {
   const [catalog, setCatalog] = useState<AwesomeCatalog | null>(initialCatalog ?? null);
   const [loading, setLoading] = useState(!initialCatalog);
   const [error, setError] = useState<string | null>(null);
@@ -340,7 +340,7 @@ export default function MainPage({ initialCatalog }: { initialCatalog?: AwesomeC
               Daily synced from GitHub Awesome
             </div>
             <h1 className="mt-8 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground/80 bg-clip-text text-5xl font-extrabold leading-tight text-transparent sm:text-6xl lg:text-7xl lg:leading-[1.1]">
-              A curated, always‑fresh index of developer excellence
+              {heroTagline ?? "A curated, always‑fresh index of developer excellence"}
             </h1>
             <p className="mt-6 text-balance text-lg text-muted-foreground sm:text-xl">
               Browse top categories or search across descriptions to discover the best tools, libraries, and resources.
