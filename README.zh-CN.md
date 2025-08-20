@@ -4,7 +4,7 @@
 
 [English](./README.md) | 中文（当前）
 
-一个基于 Next.js App Router 的开源目录应用，提供分类浏览、全文搜索、主题切换与边缘运行时（Edge Runtime）加速。
+一个基于 Next.js App Router 的开源目录应用，提供分类浏览、全文搜索、主题切换、国际化（i18n）与边缘运行时（Edge Runtime）加速。
 
 ## 技术栈
 - Next.js 15（App Router, Edge Runtime）
@@ -12,8 +12,26 @@
 - next-themes（系统/亮/暗主题）
 - Upstash Redis（KV 数据存储，REST API）
 - **@vercel/og + satori**（动态社交分享图片）
+- 内置 i18n（客户端 Context + 服务器端语言检测 headers/cookies）
 
 ## 新增功能
+### 国际化（i18n）
+- 支持语言：英文（en）、中文（zh）、西班牙语（es）、日语（ja）
+- 服务器端语言自动检测：
+  - 优先读取 cookie `language`（由客户端切换器写入，保存 1 年）
+  - 回退解析请求头 `Accept-Language`，按质量权重（q）排序选择支持语言的主语言代码
+  - 默认语言为英文（en）
+- 客户端语言切换：
+  - 组件：`<LanguageSwitcher />`（位于全局头部）
+  - 同步 localStorage 和 cookie，刷新后 SSR/CSR 一致
+  - `<HtmlLangUpdater />` 会在客户端同步 `<html lang>` 属性
+- 服务器端翻译：
+  - `createServerTranslator()`：在服务器组件中获取 `t(key)` 与当前语言
+  - `getServerTranslation(key)`：在元数据 `generateMetadata` 等场景快速取文案
+- 元数据本地化：
+  - 首页与分类页已接入本地化标题、描述、OpenGraph、Twitter 等字段
+  - 使用动态 OG 图片 `/api/og`，会根据本地化标题呈现
+
 ### 动态 OG 分享图
 - 接口：`/api/og`，支持查询参数 `title` 与 `subtitle`
 - 用法：已集成到首页与分类页的元数据中，分享卡片自动展示
@@ -112,6 +130,8 @@ interface ApiResponse<T> {
 - `/api/health` 503：检查 `KV_REST_API_URL/TOKEN` 或 `UPSTASH_REDIS_REST_URL/TOKEN`
 - OG 图片不显示：检查部署是否运行在 Edge Runtime，以及图片 URL 是否正确
 - Newsletter 不生效：检查 KV 连接，或打开浏览器控制台查看错误信息
+- 页面被标记为“动态渲染”：由于使用了 `headers()/cookies()` 进行语言检测，Next.js 会将相关路由设为动态；这是预期行为
+- 测试 i18n：切换语言后刷新页面，检查 `<html lang>`、页面文案、元数据（OG/Twitter）是否已本地化
 
 ## 许可
 CC0 1.0 Universal（公有领域贡献）
