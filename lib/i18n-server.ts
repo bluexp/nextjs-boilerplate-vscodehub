@@ -30,12 +30,25 @@ async function loadTranslations(lang: Language): Promise<Record<string, string>>
  * Get translation for a key with fallback support
  * 获取翻译值，支持回退机制
  */
+/**
+ * interpolate — Simple string interpolation helper
+ * Replaces occurrences of `{key}` in a string using provided variables.
+ */
+function interpolate(template: string, vars?: Record<string, string | number>): string {
+  if (!vars) return template;
+  return template.replace(/\{(\w+)\}/g, (_, k: string) =>
+    Object.prototype.hasOwnProperty.call(vars, k) && vars[k] !== undefined ? String(vars[k]) : `{${k}}`
+  );
+}
+
 function getTranslation(
   translations: Record<string, string>,
   key: string,
-  fallback?: string
+  fallback?: string,
+  vars?: Record<string, string | number>
 ): string {
-  return translations[key] || fallback || key;
+  const base = translations[key] || fallback || key;
+  return interpolate(base, vars);
 }
 
 /**
@@ -96,7 +109,11 @@ export async function createServerTranslator(lang?: Language) {
   const translations = await loadTranslations(detectedLang);
 
   return {
-    t: (key: string, fallback?: string) => getTranslation(translations, key, fallback),
+    /**
+     * t — Server-side translation function with optional interpolation.
+     */
+    t: (key: string, fallback?: string, vars?: Record<string, string | number>) =>
+      getTranslation(translations, key, fallback, vars),
     language: detectedLang,
     availableLanguages: Object.keys(languages) as Language[],
   };
@@ -109,9 +126,10 @@ export async function createServerTranslator(lang?: Language) {
 export async function getServerTranslation(
   key: string,
   lang?: Language,
-  fallback?: string
+  fallback?: string,
+  vars?: Record<string, string | number>
 ): Promise<string> {
   const detectedLang = lang || (await detectServerLanguage());
   const translations = await loadTranslations(detectedLang);
-  return getTranslation(translations, key, fallback);
+  return getTranslation(translations, key, fallback, vars);
 }

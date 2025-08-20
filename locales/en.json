@@ -63,5 +63,20 @@
   "newsletter.error": "Something went wrong",
   "category.description": "A curated list of awesome resources in the {title} category.",
   "breadcrumbs.home": "Home",
-  "pageFooter.poweredBy": "Powered by Next.js and Vercel. Data from Awesome Lists on GitHub."
+  "pageFooter.poweredBy": "Powered by Next.js and Vercel. Data from Awesome Lists on GitHub.",
+  "aria.breadcrumb": "Breadcrumb",
+  "aria.backToTop": "Back to top",
+  "button.top": "Top",
+  "aria.backToCurrentCategory": "Back to current category",
+  "button.currentCategory": "Current Category",
+  "aria.catalogSections": "Catalog Sections",
+  "aria.openGitHubRepo": "Open GitHub repository",
+  "newsletter.aria.email": "Email address",
+  "theme.switchToLight": "Switch to light theme",
+  "theme.switchToDark": "Switch to dark theme",
+  "theme.toggle": "Toggle theme",
+  "error.title": "Error",
+  "error.hint": "Please make sure the server API is reachable and KV environment variables are set in a .env.local file.",
+  "search.examples": "Try \"react\", \"security\", \"machine learning\" ...",
+  "search.shortcutHint": "Press / or ⌘K"
 }

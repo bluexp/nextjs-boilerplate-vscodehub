@@ -63,5 +63,20 @@
   "newsletter.error": "問題が発生しました",
   "category.description": "{title} カテゴリの素晴らしいリソースの厳選リスト。",
   "breadcrumbs.home": "ホーム",
-  "pageFooter.poweredBy": "Next.js と Vercel により提供。データは GitHub の Awesome Lists から。"
+  "pageFooter.poweredBy": "Next.js と Vercel により提供。データは GitHub の Awesome Lists から。",
+  "aria.breadcrumb": "パンくずリスト",
+  "aria.backToTop": "先頭へ戻る",
+  "button.top": "トップ",
+  "aria.backToCurrentCategory": "現在のカテゴリへ戻る",
+  "button.currentCategory": "現在のカテゴリ",
+  "aria.catalogSections": "カタログセクション",
+  "aria.openGitHubRepo": "GitHub リポジトリを開く",
+  "newsletter.aria.email": "メールアドレス",
+  "theme.switchToLight": "ライトテーマに切り替え",
+  "theme.switchToDark": "ダークテーマに切り替え",
+  "theme.toggle": "テーマを切り替え",
+  "error.title": "エラー",
+  "error.hint": "サーバー API にアクセスできること、そして .env.local に KV 環境変数が設定されていることを確認してください。",
+  "search.examples": "\"react\"、\"security\"、\"machine learning\" を試してください ...",
+  "search.shortcutHint": "/ または ⌘K を押す"
 }

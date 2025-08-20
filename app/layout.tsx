@@ -14,51 +14,61 @@ import { createServerTranslator } from "@/lib/i18n-server";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata: Metadata = {
-  title: "VSCodeHub — Awesome Catalog",
-  description:
+/**
+ * generateMetadata — Global fallback metadata with i18n defaults
+ * Provides localized title/description and social previews for routes without their own metadata.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await createServerTranslator();
+  const localizedTitle = t("metadata.title", "VSCodeHub — Awesome Catalog");
+  const localizedDescription = t(
+    "metadata.description",
     "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
-  keywords: [
-    "awesome list",
-    "developer tools",
-    "libraries",
-    "frameworks",
-    "resources",
-    "VSCodeHub",
-    "AI",
-  ],
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    type: "website",
-    url: "/",
-    title: "VSCodeHub — Awesome Catalog",
-    siteName: "VSCodeHub",
-    description:
-      "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
-    images: [
-      {
-        url: "/api/og?title=VSCodeHub%20%E2%80%94%20Awesome%20Catalog",
-        width: 1200,
-        height: 630,
-        alt: "VSCodeHub — Awesome Catalog",
-      },
+  );
+
+  return {
+    title: localizedTitle,
+    description: localizedDescription,
+    keywords: [
+      "awesome list",
+      "developer tools",
+      "libraries",
+      "frameworks",
+      "resources",
+      "VSCodeHub",
+      "AI",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "VSCodeHub — Awesome Catalog",
-    description:
-      "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
-    images: ["/api/og?title=VSCodeHub%20%E2%80%94%20Awesome%20Catalog"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+    alternates: {
+      canonical: "/",
+    },
+    openGraph: {
+      type: "website",
+      url: "/",
+      title: localizedTitle,
+      siteName: "VSCodeHub",
+      description: localizedDescription,
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(localizedTitle)}`,
+          width: 1200,
+          height: 630,
+          alt: localizedTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: localizedTitle,
+      description: localizedDescription,
+      images: [`/api/og?title=${encodeURIComponent(localizedTitle)}`],
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 /**
  * Global header component with scroll-based transparency on home page.

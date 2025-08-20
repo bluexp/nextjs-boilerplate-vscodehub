@@ -58,7 +58,7 @@ export function NewsletterForm() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder={t("newsletter.placeholder", "you@example.com")}
         className="h-10 flex-1"
-        aria-label="Email address"
+        aria-label={t("newsletter.aria.email", "Email address")}
         required
       />
       <Button type="submit" disabled={loading} className="h-10">

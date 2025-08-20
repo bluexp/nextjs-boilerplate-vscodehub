@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronRight, Home, Search, Folder } from "lucide-react";
 import type { ComponentType } from "react";
 import { memo, useMemo } from "react";
+import { useI18n } from "@/lib/i18n";
 
 interface Breadcrumb {
   href: string;
@@ -48,8 +49,10 @@ export const Breadcrumbs = memo(function Breadcrumbs({ items, className }: Bread
     });
   }, [items]);
 
+  const { t } = useI18n();
+
   return (
-    <nav aria-label="Breadcrumb" className={`mb-4 ${className ?? ""}`}>
+    <nav aria-label={t("aria.breadcrumb", "Breadcrumb")} className={`mb-4 ${className ?? ""}`}>
       <ol
         className="flex items-center space-x-1 text-sm text-muted-foreground"
         itemScope

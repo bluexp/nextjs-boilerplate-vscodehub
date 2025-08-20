@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 
 import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * ThemeToggle button that switches between light and dark mode.
@@ -17,6 +18,7 @@ import { Button } from "@/components/ui/Button";
 export function ThemeToggle() {
   const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { t } = useI18n();
 
   useEffect(() => setMounted(true), []);
 
@@ -40,12 +42,12 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       aria-pressed={isDark}
-      title={isDark ? "Switch to light theme" : "Switch to dark theme"}
+      title={isDark ? t("theme.switchToLight", "Switch to light theme") : t("theme.switchToDark", "Switch to dark theme")}
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
       <Sun className={sunClasses} />
       <Moon className={moonClasses} />
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">{t("theme.toggle", "Toggle theme")}</span>
     </Button>
   );
 }

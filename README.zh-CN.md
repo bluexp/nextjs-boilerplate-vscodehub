@@ -26,11 +26,31 @@
   - 同步 localStorage 和 cookie，刷新后 SSR/CSR 一致
   - `<HtmlLangUpdater />` 会在客户端同步 `<html lang>` 属性
 - 服务器端翻译：
-  - `createServerTranslator()`：在服务器组件中获取 `t(key)` 与当前语言
-  - `getServerTranslation(key)`：在元数据 `generateMetadata` 等场景快速取文案
+  - `createServerTranslator()`：返回 `t(key, fallback?, vars?)` 和当前语言
+  - `getServerTranslation(key, lang?, fallback?, vars?)`：在元数据 `generateMetadata` 等场景快速取文案（支持变量插值）
 - 元数据本地化：
   - 首页与分类页已接入本地化标题、描述、OpenGraph、Twitter 等字段
   - 使用动态 OG 图片 `/api/og`，会根据本地化标题呈现
+- 翻译插值（新增）：
+  - 通过 `vars` 传入的变量将替换文案中的 `{query}` 等占位符。
+  - 示例：
+    - 客户端：
+      ```ts
+      // 客户端 useI18n() 示例
+      const { t } = useI18n();
+      const title = t("search.results", undefined, { query: searchQuery });
+      ```
+    - 服务器端：
+      ```ts
+      // 服务器端 createServerTranslator() 示例
+      const { t } = await createServerTranslator();
+      const title = t("search.noResults", "No results", { query });
+      ```
+    - 元数据：
+      ```ts
+      // 服务器端快速助手（适用于元数据等静态场景）
+      const title = await getServerTranslation("search.results", "en", undefined, { query: "book" });
+      ```
 
 ### 动态 OG 分享图
 - 接口：`/api/og`，支持查询参数 `title` 与 `subtitle`

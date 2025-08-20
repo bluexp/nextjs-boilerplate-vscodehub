@@ -63,5 +63,20 @@
   "newsletter.error": "Algo salió mal",
   "category.description": "Una lista curada de recursos increíbles en la categoría {title}.",
   "breadcrumbs.home": "Inicio",
-  "pageFooter.poweredBy": "Impulsado por Next.js y Vercel. Datos de Awesome Lists en GitHub."
+  "pageFooter.poweredBy": "Impulsado por Next.js y Vercel. Datos de Awesome Lists en GitHub.",
+  "aria.breadcrumb": "Ruta de navegación",
+  "aria.backToTop": "Volver arriba",
+  "button.top": "Arriba",
+  "aria.backToCurrentCategory": "Volver a la categoría actual",
+  "button.currentCategory": "Categoría actual",
+  "aria.catalogSections": "Secciones del catálogo",
+  "aria.openGitHubRepo": "Abrir repositorio de GitHub",
+  "newsletter.aria.email": "Dirección de correo",
+  "theme.switchToLight": "Cambiar a tema claro",
+  "theme.switchToDark": "Cambiar a tema oscuro",
+  "theme.toggle": "Alternar tema",
+  "error.title": "Error",
+  "error.hint": "Asegúrate de que la API del servidor sea accesible y que las variables de entorno KV estén definidas en .env.local.",
+  "search.examples": "Prueba \"react\", \"security\", \"machine learning\" ...",
+  "search.shortcutHint": "Pulsa / o ⌘K"
 }

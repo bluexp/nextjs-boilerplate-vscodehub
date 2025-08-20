@@ -63,5 +63,20 @@
   "newsletter.error": "出错了，请稍后重试",
   "category.description": "在 {title} 分类中的精选优质资源。",
   "breadcrumbs.home": "首页",
-  "pageFooter.poweredBy": "由 Next.js 和 Vercel 强力驱动。数据来源于 GitHub 上的 Awesome 列表。"
+  "pageFooter.poweredBy": "由 Next.js 和 Vercel 强力驱动。数据来源于 GitHub 上的 Awesome 列表。",
+  "aria.breadcrumb": "面包屑导航",
+  "aria.backToTop": "返回顶部",
+  "button.top": "顶部",
+  "aria.backToCurrentCategory": "返回当前分类",
+  "button.currentCategory": "当前分类",
+  "aria.catalogSections": "目录分区",
+  "aria.openGitHubRepo": "打开 GitHub 仓库",
+  "newsletter.aria.email": "电子邮箱地址",
+  "theme.switchToLight": "切换到浅色主题",
+  "theme.switchToDark": "切换到深色主题",
+  "theme.toggle": "切换主题",
+  "error.title": "错误",
+  "error.hint": "请确保服务器 API 可达，并在 .env.local 文件中设置好 KV 环境变量。",
+  "search.examples": "试试 \"react\"、\"security\"、\"machine learning\" ...",
+  "search.shortcutHint": "按 / 或 ⌘K"
 }

@@ -96,11 +96,31 @@ curl "http://localhost:3000/api/og?title=VSCodeHub&subtitle=Awesome%20AI%20Catal
   - Persists to localStorage and cookie to keep SSR/CSR consistent on refresh
   - `<HtmlLangUpdater />` syncs `<html lang>` on the client
 - Server-side translations:
-  - `createServerTranslator()` for server components to get `t(key)` and the current language
-  - `getServerTranslation(key)` for quick lookups in `generateMetadata` and similar
+  - `createServerTranslator()` returns `t(key, fallback?, vars?)` and the current language
+  - `getServerTranslation(key, lang?, fallback?, vars?)` for quick lookups in `generateMetadata` and similar (supports interpolation)
 - Localized metadata:
   - Homepage and category pages include localized title, description, OpenGraph, and Twitter fields
   - Dynamic OG image `/api/og` uses localized title automatically
+- Translation interpolation (NEW):
+  - Placeholders like `{query}` in locale strings are replaced by values you pass via `vars`.
+  - Examples:
+    - Client:
+      ```ts
+      // Client example with useI18n()
+      const { t } = useI18n();
+      const title = t("search.results", undefined, { query: searchQuery });
+      ```
+    - Server:
+      ```ts
+      // Server example with createServerTranslator()
+      const { t } = await createServerTranslator();
+      const title = t("search.noResults", "No results", { query });
+      ```
+    - Metadata:
+      ```ts
+      // Server helper for metadata and static places
+      const title = await getServerTranslation("search.results", "en", undefined, { query: "book" });
+      ```
 
 
 ### Dynamic OG Images

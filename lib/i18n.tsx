@@ -28,7 +28,7 @@ export const defaultLanguage: Language = "en";
 interface I18nContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, fallback?: string, vars?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nContextType | null>(null);
@@ -81,10 +81,23 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Translation function that returns the translated string or fallback.
+   * interpolate — Simple string interpolation helper
+   * Replaces occurrences of `{key}` in a string using provided variables.
    */
-  const t = (key: string, fallback?: string): string => {
-    return translations[key] || fallback || key;
+  function interpolate(template: string, vars?: Record<string, string | number>): string {
+    if (!vars) return template;
+    return template.replace(/\{(\w+)\}/g, (_, k: string) =>
+      Object.prototype.hasOwnProperty.call(vars, k) && vars[k] !== undefined ? String(vars[k]) : `{${k}}`
+    );
+  }
+
+  /**
+   * Translation function that returns the translated string or fallback.
+   * Supports optional variable interpolation when the translation contains placeholders like `{query}`.
+   */
+  const t = (key: string, fallback?: string, vars?: Record<string, string | number>): string => {
+    const base = translations[key] || fallback || key;
+    return interpolate(base, vars);
   };
 
   /**

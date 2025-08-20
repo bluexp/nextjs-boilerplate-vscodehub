@@ -184,7 +184,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
       const items = await searchItemsClient(searchQuery, 100);
       if (items.length > 0) {
         const searchResultCategory: AwesomeCategory = {
-          title: t("search.results", `Search Results for "${searchQuery}"`),
+          title: t("search.results", `Search Results for "${searchQuery}"`, { query: searchQuery }),
           slug: "search-results",
           items,
           children: [],
@@ -199,7 +199,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
           return;
         }
         const noResultsCategory: AwesomeCategory = {
-          title: t("search.noResults", `No Results for "${searchQuery}"`),
+          title: t("search.noResults", `No Results for "${searchQuery}"`, { query: searchQuery }),
           slug: "no-results",
           items: [],
           children: [],
@@ -229,7 +229,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
 
       if (filteredItems.length > 0) {
         const searchResultCategory: AwesomeCategory = {
-          title: t("search.results", `Search Results for "${searchQuery}"`),
+          title: t("search.results", `Search Results for "${searchQuery}"`, { query: searchQuery }),
           slug: "search-results",
           items: filteredItems,
           children: [],
@@ -243,7 +243,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
           return;
         }
         const noResultsCategory: AwesomeCategory = {
-          title: t("search.noResults", `No Results for "${searchQuery}"`),
+          title: t("search.noResults", `No Results for "${searchQuery}"`, { query: searchQuery }),
           slug: "no-results",
           items: [],
           children: [],
@@ -425,18 +425,18 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
             <aside className="sticky top-24 col-span-3 hidden max-h-[calc(100vh-10rem)] overflow-y-auto pr-4 lg:block">
               {/* Quick actions: Back to top / Back to current category */}
               <div className="mb-4 flex gap-2">
-                <Button variant="outline" size="sm" onClick={scrollToTop} aria-label="Back to top">
+                <Button variant="outline" size="sm" onClick={scrollToTop} aria-label={t("aria.backToTop", "Back to top")}>
                   {/* icon inserted via lucide-react */}
                   <svg className="mr-1 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 15l7-7 7 7"/><path d="M12 8v13"/></svg>
-                  Top
+                  {t("button.top", "Top")}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={scrollToCurrentCategory} disabled={!activeSection} aria-label="Back to current category">
+                <Button variant="ghost" size="sm" onClick={scrollToCurrentCategory} disabled={!activeSection} aria-label={t("aria.backToCurrentCategory", "Back to current category")}>
                   {/* icon inserted via lucide-react */}
                   <svg className="mr-1 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
-                  Current Category
+                  {t("button.currentCategory", "Current Category")}
                 </Button>
               </div>
-              <nav aria-label="Catalog Sections" className="space-y-3 text-sm">
+              <nav aria-label={t("aria.catalogSections", "Catalog Sections")} className="space-y-3 text-sm">
                 {sidebarCategories.map((cat) => (
                   <div key={cat.slug} className="rounded-lg border border-border/40 bg-card/50 p-3 shadow-sm">
                     <a 
@@ -480,11 +480,10 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
               )}
               {!loading && error && (
                 <div className="rounded-md border border-destructive bg-destructive/10 p-4 text-destructive">
-                  <h4 className="font-semibold">Error</h4>
+                  <h4 className="font-semibold">{t("error.title", "Error")}</h4>
                   <p>{error}</p>
                   <p className="text-sm text-muted-foreground">
-                    Please make sure the server API is reachable and KV environment
-                    variables are set in a <code>.env.local</code> file.
+                    {t("error.hint", "Please make sure the server API is reachable and KV environment variables are set in a .env.local file.")}
                   </p>
                 </div>
               )}
