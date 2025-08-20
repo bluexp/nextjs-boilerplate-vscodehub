@@ -65,9 +65,7 @@ const ItemCard = memo(function ItemCard({ item, highlightQuery }: { item: Awesom
         {/* Title and link */}
         <h3 className="mb-2 font-semibold tracking-tight text-foreground">
           <Link
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={`/items/${encodeUrlToId(item.url)}`}
             className="flex items-center gap-2 hover:underline"
           >
             {/* Site icon */}
@@ -230,6 +228,28 @@ function CategorySectionSkeleton() {
       </div>
     </section>
   );
+}
+
+/**
+ * Encode a URL to base64url string to use as a safe path segment.
+ */
+/**
+ * encodeUrlToId — 在服务端使用 Buffer，在客户端使用 btoa，确保同构安全
+ */
+function encodeUrlToId(url: string): string {
+  try {
+    if (typeof window === "undefined") {
+      const b64 = Buffer.from(url, "utf8").toString("base64");
+      return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+    }
+    const utf8 = encodeURIComponent(url).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+      String.fromCharCode(parseInt(p1, 16))
+    );
+    const b64 = btoa(utf8);
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  } catch {
+    return "";
+  }
 }
 
 /**

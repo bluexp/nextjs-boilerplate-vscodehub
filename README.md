@@ -13,6 +13,10 @@ An open-source, production‑ready catalog application powered by Next.js App Ro
 - Server-rendered pages with smooth client UX; responsive and fast
 - Full‑text search with simple term matching and limit control
 - Theme switching (system / light / dark) via next-themes
+- **Dynamic OG image generation** for enhanced social sharing
+- **Newsletter subscription** with KV storage
+- **SEO optimized** with rich metadata, JSON-LD structured data
+- **Community contributions** via GitHub Issue templates
 - Health check endpoint suitable for platform monitoring
 - Scheduled sync (Cron) to pull and parse the upstream Awesome list
 
@@ -21,11 +25,16 @@ An open-source, production‑ready catalog application powered by Next.js App Ro
 - TypeScript + Tailwind-based styling
 - next-themes for theme management
 - Upstash Redis (KV via REST API)
+- **@vercel/og + satori** for dynamic social image generation
 - Jest + Testing Library for unit tests
 
 ## Project Structure (key parts)
 - app/ — App Router pages and API routes
+  - api/og/ — Dynamic OG image generation
+  - api/newsletter/ — Newsletter subscription handler
 - components/ — UI and client components
+  - ui/NewsletterForm.tsx — Newsletter signup form
+- .github/ISSUE_TEMPLATE/ — Community contribution templates
 - lib/ — KV access, parser, utilities
 - types/ — Shared TypeScript types
 
@@ -68,7 +77,34 @@ curl http://localhost:3000/api/categories
 curl "http://localhost:3000/api/search?q=react&limit=10"
 # Health
 curl -i http://localhost:3000/api/health
+# Dynamic OG image
+curl "http://localhost:3000/api/og?title=VSCodeHub&subtitle=Awesome%20AI%20Catalog"
 ```
+
+## New Features
+
+### Dynamic OG Images
+- **Endpoint**: `/api/og` with query parameters `title` and `subtitle`
+- **Usage**: Automatically integrated into homepage and category pages
+- **Example**: `http://localhost:3000/api/og?title=AI%20Tools&subtitle=Curated%20Collection`
+- **Features**: Gradient background, brand styling, Edge Runtime optimized
+
+### Newsletter Subscription
+- **Frontend**: Newsletter form in footer with email validation
+- **Backend**: `/api/newsletter` stores subscribers in KV storage
+- **Storage**: Key `newsletter:subscribers` with email → timestamp mapping
+- **Features**: Duplicate prevention, success/error states
+
+### Enhanced SEO & Metadata
+- **Rich metadata**: Open Graph, Twitter Cards, comprehensive meta tags
+- **JSON-LD structured data**: WebSite, Organization, BreadcrumbList, CollectionPage
+- **SearchAction**: Google Search Console compatible site search
+- **Category-specific**: Dynamic metadata for each category page
+
+### Community Contributions
+- **Submit Resource**: GitHub Issue template at `.github/ISSUE_TEMPLATE/submit-resource.yml`
+- **Footer link**: Direct access to resource submission form
+- **Categories**: AI, Web Development, DevOps, Security, Data Engineering, Other
 
 ## API Reference (Edge Runtime)
 All API routes run on the Edge Runtime and return JSON with a common shape.
@@ -96,6 +132,17 @@ interface ApiResponse<T> {
 - GET /api/search?q=<terms>&limit=<n>
   - 200: `{ ok: true, data: { query, limit, total, items } }`
   - 400 if `q` is missing/empty.
+
+- **GET /api/og?title=<title>&subtitle=<subtitle>** (NEW)
+  - 200: Returns dynamic PNG image (1200×630)
+  - Features: Gradient background, typography, brand colors
+  - Used automatically in page metadata for social sharing
+
+- **POST /api/newsletter** (NEW)
+  - Body: `{ email: string }`
+  - 200: `{ ok: true, message: "Subscribed successfully" }`
+  - 400: `{ ok: false, error: "Invalid email" }`
+  - 409: `{ ok: false, error: "Already subscribed" }`
 
 - POST /api/admin/sync (Edge) | also supports GET
   - Dev: auth is bypassed for convenience
@@ -129,7 +176,26 @@ export interface AwesomeCatalog {
   list: AwesomeItem[];
   meta: { updatedAt: string; totalItems: number; version: number };
 }
+
+// Newsletter subscriber (NEW)
+export interface NewsletterSubscriber {
+  email: string;
+  subscribedAt: string;
+}
 ```
+
+## SEO & Structured Data
+The application includes comprehensive SEO optimization:
+
+- **Meta tags**: Dynamic titles, descriptions, keywords for each page
+- **Open Graph**: Rich social sharing with dynamic OG images
+- **Twitter Cards**: Summary with large image support
+- **JSON-LD structured data**:
+  - `WebSite` with SearchAction for homepage
+  - `Organization` for brand information
+  - `BreadcrumbList` for navigation
+  - `CollectionPage` for category pages
+- **Sitemap & Robots**: Dynamic generation based on catalog structure
 
 ## Sync & Cron (Production)
 - Endpoint: `/api/admin/sync` (GET/POST)
@@ -147,21 +213,31 @@ export interface AwesomeCatalog {
 - Connect the repository and set required environment variables
 - Ensure Cron is configured (either via vercel.json or dashboard)
 - Production build: `npm run build`; start: `npm start`
+- **OG images**: Automatically work on Vercel with Edge Runtime
+- **Newsletter**: Uses KV storage, no additional setup needed
 
 ## Development Tips
 - Scripts: `dev` (Turbopack), `build`, `start`, `lint`, `test`
 - Theme toggle lives in the global header (next-themes). Default follows system preference
-- Accessibility: a “Skip to content” link is available for keyboard users
+- **Newsletter testing**: Check KV storage with key `newsletter:subscribers`
+- **OG image testing**: Visit `/api/og?title=Test&subtitle=Image` to preview
+- Accessibility: a "Skip to content" link is available for keyboard users
 - SEO: robots.txt and sitemap.xml are served from the app directory
 
 ## Troubleshooting
 - 404 on `/api/catalog`: Run `/api/admin/sync?force=1` to seed data
 - 503 on `/api/health`: Check `KV_REST_API_URL/TOKEN` or `UPSTASH_REDIS_REST_URL/TOKEN`
 - GitHub rate limit: set `GITHUB_TOKEN` to increase API limits for the sync pipeline
+- **OG images not loading**: Check Edge Runtime deployment and image URL format
+- **Newsletter not working**: Verify KV connection and check browser console for errors
 
 ## Testing
 - Run unit tests with Jest: `npm test`
 - The markdown parser dynamically imports ESM packages; a test‑only fallback keeps tests reliable
+- **Manual testing**:
+  - Newsletter: Fill form in footer, check KV storage
+  - OG images: Test social sharing or visit API endpoint directly
+  - SEO: Use browser dev tools to inspect meta tags and JSON-LD
 
 ## License
 CC0 1.0 Universal
@@ -173,4 +249,5 @@ CC0 1.0 Universal
 ## Acknowledgements
 - Inspired by the Awesome list by sindresorhus
 - Upstash for Redis KV (REST API)
+- Vercel for OG image generation (@vercel/og)
 - Next.js team and community

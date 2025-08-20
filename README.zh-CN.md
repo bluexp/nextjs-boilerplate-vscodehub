@@ -11,6 +11,32 @@
 - TypeScript + Tailwind 风格样式
 - next-themes（系统/亮/暗主题）
 - Upstash Redis（KV 数据存储，REST API）
+- **@vercel/og + satori**（动态社交分享图片）
+
+## 新增功能
+### 动态 OG 分享图
+- 接口：`/api/og`，支持查询参数 `title` 与 `subtitle`
+- 用法：已集成到首页与分类页的元数据中，分享卡片自动展示
+- 示例：`http://localhost:3000/api/og?title=AI%20Tools&subtitle=Curated%20Collection`
+- 特性：渐变背景、品牌风格、Edge Runtime 性能优化
+
+### Newsletter 订阅
+- 前端：页脚 Newsletter 表单，带基础邮箱校验
+- 后端：`/api/newsletter` 将订阅者存储于 KV
+- 存储结构：键 `newsletter:subscribers`，值为 email → subscribedAt 映射
+- 特性：重复订阅拦截、提交成功/失败状态提示
+
+### SEO 增强
+- 丰富的 meta 信息（title/description/keywords）
+- Open Graph / Twitter Cards
+- JSON-LD 结构化数据：WebSite、Organization、BreadcrumbList、CollectionPage
+- SearchAction：适配站内搜索结构化数据（有助于搜索引擎理解）
+- 分类页：基于分类动态生成元数据
+
+### 社区共建
+- 新增 GitHub Issue 模板：`.github/ISSUE_TEMPLATE/submit-resource.yml`
+- 页脚新增“Submit Resource”入口链接
+- 支持分类：AI、Web Development、DevOps、Security、Data Engineering、Other
 
 ## 快速开始
 1. 安装依赖并启动开发服务器：
@@ -21,67 +47,71 @@ npm run dev
 ```
 2. 配置环境变量（创建 .env.local）：
 ```bash
-# 二选一：使用 KV_* 或 UPSTASH_*（推荐使用你的 Upstash Redis REST 凭据）
+# 二选一：使用 KV_* 或 UPSTASH_*（推荐使用 Upstash Redis REST 凭据）
 KV_REST_API_URL=...
 KV_REST_API_TOKEN=...
 # 或
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
 
-# 可选：用于提升 GitHub 拉取频率限制
+# 可选：提升 GitHub 拉取速率限制
 GITHUB_TOKEN=...
 
-# 仅生产使用：用于 /api/admin/sync 鉴权（Cron 触发）
+# 仅生产：/api/admin/sync 的鉴权密钥（用于 Cron）
 CRON_SECRET=your-strong-secret
 ```
 3. 初始化数据（同步 Awesome 列表）：
-- 本地开发环境可直接访问（开发模式跳过鉴权）：
+- 本地开发可直接触发（开发模式跳过鉴权）：
   - GET/POST `http://localhost:3000/api/admin/sync?force=1`
-- 看到响应 `{ "ok": true, "stored": true }` 即同步成功。
+- 预期返回：`{"ok":true,"stored":true,...}` 或 `{"ok":true,"stored":false,"message":"Not modified"}`
 
-4. 验证 API：
+4. 快速验证 API：
 ```bash
-# 目录
+# 目录数据
 curl http://localhost:3000/api/catalog
-# 分类
+# 分类列表
 curl http://localhost:3000/api/categories
 # 搜索
-curl "http://localhost:3000/api/search?q=react"
+curl "http://localhost:3000/api/search?q=react&limit=10"
+# 健康检查
+curl -i http://localhost:3000/api/health
+# 动态 OG 图片
+curl "http://localhost:3000/api/og?title=VSCodeHub&subtitle=Awesome%20AI%20Catalog"
 ```
 
-## 健康检查（生产可用）
-- 路径：`/api/health`
-- 含义：
-  - HTTP 200：健康；`details.kv=connected`，`details.catalog=ready/empty`（empty 为提示，不代表失败）
-  - HTTP 503：不健康（KV 配置/连接失败）
-
-## 同步任务（生产环境）
-- 端点：`/api/admin/sync`（GET/POST 均可）
-- 鉴权（仅生产）：
-  - Header: `x-cron-secret: <CRON_SECRET>` 或 `Authorization: Bearer <CRON_SECRET>`
-- 定时：项目包含 `vercel.json` 中的 Cron 配置示例（每 12 小时）：
-```json
-{
-  "crons": [
-    { "path": "/api/admin/sync", "schedule": "0 */12 * * *" }
-  ]
+## API 参考（Edge Runtime）
+- 通用响应结构：
+```ts
+interface ApiResponse<T> {
+  ok: boolean;
+  data?: T;
+  error?: string;
 }
 ```
-提示：如在 Vercel 控制台使用 Cron Jobs，可设置自定义 Header 传递 `x-cron-secret`。
+
+- GET /api/og?title=<title>&subtitle=<subtitle>（新增）
+  - 200：返回 1200×630 PNG 图片
+  - 用于页面社交分享卡片（已自动集成）
+
+- POST /api/newsletter（新增）
+  - Body: `{ email: string }`
+  - 200：`{ ok: true, message: "Subscribed successfully" }`
+  - 400：`{ ok: false, error: "Invalid email" }`
+  - 409：`{ ok: false, error: "Already subscribed" }`
+
+- 其他 API：/api/catalog、/api/categories、/api/search、/api/admin/sync、/api/health 保持不变
+
+## 开发与部署
+- 开发脚本：`dev`（Turbopack）、`build`、`start`、`lint`、`test`
+- OG 图片：默认在 Edge Runtime 下工作；Vercel 部署开箱即用
+- Newsletter：使用 KV 存储，无额外部署配置
+- SEO：robots.txt 与 sitemap.xml 从 app 目录生成
 
 ## 常见问题（Troubleshooting）
-- `GET /api/catalog 404 {"error":"Catalog not found. Run sync first."}`
-  - 说明：API 正常，但 KV 尚未写入数据。解决：先触发 `/api/admin/sync?force=1`。
-- `GET /@vite/client 404`
-  - 开发环境下无害日志，可忽略。
-- GitHub 速率限制
-  - 建议配置 `GITHUB_TOKEN` 以提升拉取频率上限。
-- KV 连接失败（/api/health 返回 503）
-  - 检查 `KV_REST_API_URL/TOKEN` 或 `UPSTASH_REDIS_REST_URL/TOKEN` 是否正确。
-
-## 开发说明
-- 主题切换：右上角按钮，使用 next-themes，默认跟随系统，可手动切换亮/暗。
-- 首页头部：滚动透明效果，滚动超 80px 自动显示背景与阴影。
+- `/api/catalog` 404：先执行 `/api/admin/sync?force=1` 写入数据
+- `/api/health` 503：检查 `KV_REST_API_URL/TOKEN` 或 `UPSTASH_REDIS_REST_URL/TOKEN`
+- OG 图片不显示：检查部署是否运行在 Edge Runtime，以及图片 URL 是否正确
+- Newsletter 不生效：检查 KV 连接，或打开浏览器控制台查看错误信息
 
 ## 许可
 CC0 1.0 Universal（公有领域贡献）

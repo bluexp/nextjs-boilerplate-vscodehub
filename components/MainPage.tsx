@@ -369,10 +369,8 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
                       <ul className="max-h-80 overflow-auto py-1">
                         {suggestions.map((item) => (
                           <li key={item.url}>
-                            <a
-                              href={item.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <Link
+                              href={`/items/${encodeUrlToId(item.url)}`}
                               className="block px-3 py-2 hover:bg-accent/50"
                             >
                               <div className="text-sm font-medium text-foreground">{item.title}</div>
@@ -382,7 +380,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
                               {item.category && (
                                 <div className="mt-1 text-[11px] text-muted-foreground/80">{item.category}{item.subcategory ? ` · ${item.subcategory}` : ""}</div>
                               )}
-                            </a>
+                            </Link>
                           </li>
                         ))}
                       </ul>
@@ -496,4 +494,20 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
       </main>
     </div>
   );
+}
+
+/**
+ * encodeUrlToId — 在客户端将任意 URL 编码为 base64url，适合作为路径参数使用
+ * 使用 btoa + UTF-8 编码，避免依赖 Node 的 Buffer 以减小前端体积。
+ */
+function encodeUrlToId(url: string): string {
+  try {
+    const utf8 = encodeURIComponent(url).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+      String.fromCharCode(parseInt(p1, 16))
+    );
+    const b64 = btoa(utf8);
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  } catch {
+    return "";
+  }
 }

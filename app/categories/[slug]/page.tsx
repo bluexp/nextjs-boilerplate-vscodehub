@@ -181,3 +181,12 @@ export default async function CategoryPage({
     </div>
   );
 }
+
+function encodeUrlToId(url: string): string {
+  try {
+    const b64 = Buffer.from(url, "utf8").toString("base64");
+    return b64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  } catch {
+    return "";
+  }
+}
