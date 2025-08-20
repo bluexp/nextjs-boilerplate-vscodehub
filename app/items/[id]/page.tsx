@@ -6,7 +6,6 @@ import Script from "next/script";
 import { Star, Share2, ExternalLink, Link as LinkIcon, BookOpen, FileText, Video as VideoIcon, Home, Github } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { createServerTranslator } from "@/lib/i18n-server";
-import type { Language } from "@/lib/i18n";
 
 /**
  * Decode a base64url string to the original URL string.
@@ -57,7 +56,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const url = decodeBase64Url(id);
   const item = await findItemByUrl(url);
-  const { t } = await createServerTranslator("en" as Language);
+  const { t } = await createServerTranslator();
   if (!item) return { title: t("item.notFoundTitle", "Item Not Found") };
 
   const siteUrl = getSiteUrl();
@@ -107,9 +106,8 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
     notFound();
   }
 
-  // 基于目标 URL 猜测展示语言，并创建服务器端翻译器
-  const hint = detectLanguageFromUrl(item.url) as Language | undefined;
-  const { t } = await createServerTranslator(hint ?? "en");
+  // 服务器端翻译器（基于 headers/cookies 自动检测）
+  const { t } = await createServerTranslator();
 
   // 基础派生信息
   const domain = (() => {

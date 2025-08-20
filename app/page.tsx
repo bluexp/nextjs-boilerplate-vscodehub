@@ -3,7 +3,6 @@ import { getCatalog } from "@/lib/kv";
 import type { Metadata } from "next";
 import Script from "next/script";
 import { createServerTranslator } from "@/lib/i18n-server";
-import type { Language } from "@/lib/i18n";
 
 /**
  * Home page server component.
@@ -16,14 +15,38 @@ import type { Language } from "@/lib/i18n";
  * Returns localized title/description using server-side translator to avoid client hooks on the server.
  */
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await createServerTranslator("en" as Language);
+  const { t } = await createServerTranslator();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const localizedTitle = t("metadata.title", "VSCodeHub — Awesome Catalog");
+  const localizedDescription = t(
+    "metadata.description",
+    "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
+  );
   return {
-    title: t("metadata.title", "VSCodeHub — Awesome Catalog"),
-    description: t(
-      "metadata.description",
-      "Curated, always‑fresh index of developer excellence. Explore categories, search, and discover the best resources.",
-    ),
+    title: localizedTitle,
+    description: localizedDescription,
     alternates: { canonical: "/" },
+    openGraph: {
+      type: "website",
+      url: "/",
+      siteName: "VSCodeHub",
+      title: localizedTitle,
+      description: localizedDescription,
+      images: [
+        {
+          url: `/api/og?title=${encodeURIComponent(localizedTitle)}`,
+          width: 1200,
+          height: 630,
+          alt: localizedTitle,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: localizedTitle,
+      description: localizedDescription,
+      images: [`/api/og?title=${encodeURIComponent(localizedTitle)}`],
+    },
   };
 }
 
@@ -31,7 +54,7 @@ export default async function Home() {
   const catalog = await getCatalog();
 
   // Localize hero tagline variants — one is randomly selected per request
-  const { t } = await createServerTranslator("en" as Language);
+  const { t } = await createServerTranslator();
   const taglines = [
     t("hero.tagline.default", "A curated, always‑fresh index of developer excellence"),
     t("hero.tagline.alt1", "Discover the best tools, libraries, and resources — curated daily"),

@@ -121,12 +121,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     url: siteUrl,
   };
 
-  // Server-side default lang attribute for initial HTML
-  const serverDefaultLang = "en"; // Will be synced on client by HtmlLangUpdater
+  // Server-side language detection and translator
+  const { language: serverDefaultLang, t } = await createServerTranslator();
+ 
 
-  // Server-side translator for static strings in layout
-  const { t } = await createServerTranslator("en");
-
+ 
   return (
     <html lang={serverDefaultLang} suppressHydrationWarning>
       <body className={inter.className}>

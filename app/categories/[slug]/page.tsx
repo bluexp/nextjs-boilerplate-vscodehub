@@ -6,7 +6,6 @@ import { notFound } from "next/navigation";
 import CategoryPageClient from "@/components/CategoryPageClient";
 import Script from "next/script";
 import { createServerTranslator } from "@/lib/i18n-server";
-import type { Language } from "@/lib/i18n";
 
 /**
  * Finds a category by its slug in a tree of categories.
@@ -81,8 +80,8 @@ export async function generateMetadata({
     return {};
   }
 
-  // Server-side translator (default to English for metadata)
-  const { t } = await createServerTranslator("en" as Language);
+  // Server-side translator (auto-detected via headers/cookies)
+  const { t } = await createServerTranslator();
 
   const title = `${category.title} | VSCodeHub`;
   const description = t(
@@ -143,8 +142,8 @@ export default async function CategoryPage({
     notFound();
   }
 
-  // Server-side translator for static content
-  const { t } = await createServerTranslator("en" as Language);
+  // Server-side translator for static content (auto-detected)
+  const { t } = await createServerTranslator();
 
   const breadcrumbs = [
     { href: "/", label: t("breadcrumbs.home", "Home") },

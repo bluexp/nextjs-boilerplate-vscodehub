@@ -67,12 +67,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   };
 
   /**
-   * Set language and persist to localStorage.
+   * Set language and persist to localStorage and cookies.
+   * Cookie is set for server-side language detection.
    */
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
     if (typeof window !== "undefined") {
       localStorage.setItem("language", lang);
+      // Set cookie for server-side detection (expires in 1 year)
+      document.cookie = `language=${lang}; path=/; max-age=31536000; samesite=lax`;
     }
     loadTranslations(lang);
   };
