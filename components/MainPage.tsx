@@ -11,6 +11,7 @@ import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import clsx from "clsx";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Flatten all items from a tree of categories into a single array.
@@ -81,10 +82,10 @@ function formatUpdatedAt(updatedAt?: string) {
  * Compute breadcrumb items for the home page.
  * When there are search results, show Home > Search; otherwise show just Home
  */
-function getHomeBreadcrumbItems(searchQuery: string, hasFiltered: boolean) {
-  const items = [{ href: "/", label: "Home" }];
+function getHomeBreadcrumbItems(searchQuery: string, hasFiltered: boolean, t: (key: string, fallback?: string) => string) {
+  const items = [{ href: "/", label: t("nav.home") }];
   if (hasFiltered && searchQuery.trim()) {
-    items.push({ href: "#", label: "Search" });
+    items.push({ href: "#", label: t("nav.search") });
   }
   return items;
 }
@@ -106,6 +107,8 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const suggestionsDebounceRef = useRef<number | null>(null);
+
+  const { t } = useI18n();
 
   /**
    * Effect: fetch real-time search suggestions with debounce
@@ -181,7 +184,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
       const items = await searchItemsClient(searchQuery, 100);
       if (items.length > 0) {
         const searchResultCategory: AwesomeCategory = {
-          title: `Search Results for "${searchQuery}"`,
+          title: t("search.results", `Search Results for "${searchQuery}"`),
           slug: "search-results",
           items,
           children: [],
@@ -196,7 +199,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
           return;
         }
         const noResultsCategory: AwesomeCategory = {
-          title: `No Results for "${searchQuery}"`,
+          title: t("search.noResults", `No Results for "${searchQuery}"`),
           slug: "no-results",
           items: [],
           children: [],
@@ -226,7 +229,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
 
       if (filteredItems.length > 0) {
         const searchResultCategory: AwesomeCategory = {
-          title: `Search Results for "${searchQuery}"`,
+          title: t("search.results", `Search Results for "${searchQuery}"`),
           slug: "search-results",
           items: filteredItems,
           children: [],
@@ -240,7 +243,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
           return;
         }
         const noResultsCategory: AwesomeCategory = {
-          title: `No Results for "${searchQuery}"`,
+          title: t("search.noResults", `No Results for "${searchQuery}"`),
           slug: "no-results",
           items: [],
           children: [],
@@ -248,11 +251,11 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
         setFilteredCatalog([noResultsCategory]);
       }
     }
-  }, [searchQuery, catalog]);
+  }, [searchQuery, catalog, t]);
 
   const breadcrumbs = useMemo(
-    () => getHomeBreadcrumbItems(searchQuery, !!filteredCatalog),
-    [searchQuery, filteredCatalog]
+    () => getHomeBreadcrumbItems(searchQuery, !!filteredCatalog, t),
+    [searchQuery, filteredCatalog, t]
   );
 
   // Desktop Sidebar Data — derive current categories to show in the sidebar
@@ -337,13 +340,13 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
           <div className="mx-auto max-w-4xl text-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card px-3 py-1 text-xs text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Daily synced from GitHub Awesome
+              {t("hero.badge", "Daily synced from GitHub Awesome")}
             </div>
             <h1 className="mt-8 bg-gradient-to-br from-foreground via-foreground/90 to-muted-foreground/80 bg-clip-text text-5xl font-extrabold leading-tight text-transparent sm:text-6xl lg:text-7xl lg:leading-[1.1]">
-              {heroTagline ?? "A curated, always‑fresh index of developer excellence"}
+              {heroTagline ?? t("hero.title", "A curated, always‑fresh index of developer excellence")}
             </h1>
             <p className="mt-6 text-balance text-lg text-muted-foreground sm:text-xl">
-              Browse top categories or search across descriptions to discover the best tools, libraries, and resources.
+              {t("hero.subtitle", "Browse top categories or search across descriptions to discover the best tools, libraries, and resources.")}
             </p>
 
             <form onSubmit={handleSearch} className="mt-10 lg:mt-12">
@@ -354,7 +357,7 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
                   <Input
                     ref={searchInputRef}
                     type="search"
-                    placeholder="Search awesome resources..."
+                    placeholder={t("search.placeholder", "Search awesome resources...")}
                     className="h-14 w-full rounded-l-md border-input bg-card pl-12 text-lg shadow-sm outline-none ring-0 focus-visible:ring-2 focus-visible:ring-ring lg:h-16 lg:pl-14 lg:text-xl"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -384,20 +387,20 @@ export default function MainPage({ initialCatalog, heroTagline }: { initialCatal
                           </li>
                         ))}
                       </ul>
-                      <div className="border-t px-3 py-1.5 text-xs text-muted-foreground">Press Enter to run full search</div>
+                      <div className="border-t px-3 py-1.5 text-xs text-muted-foreground">{t("search.enterHint", "Press Enter to run full search")}</div>
                     </div>
                   )}
                 </div>
                 <Button type="submit" className="h-14 rounded-l-none px-5 text-base lg:h-16 lg:px-6 lg:text-lg">
-                  Search
+                  {t("search.button", "Search")}
                   <ChevronRight className="ml-1 h-4 w-4 lg:h-5 lg:w-5" />
                 </Button>
               </div>
             </form>
 
             <div className="mt-4 text-sm text-muted-foreground">
-              Try "react", "security", "machine learning" ...
-              <span id="search-shortcut-hint" className="ml-2 hidden rounded-full border border-border/50 bg-card px-2 py-0.5 text-xs text-muted-foreground/80 sm:inline-block">Press / or ⌘K</span>
+              {t("search.examples", 'Try "react", "security", "machine learning" ...')}
+              <span id="search-shortcut-hint" className="ml-2 hidden rounded-full border border-border/50 bg-card px-2 py-0.5 text-xs text-muted-foreground/80 sm:inline-block">{t("search.shortcutHint", "Press / or ⌘K")}</span>
             </div>
 
             {/* Last updated timestamp (always visible) */}

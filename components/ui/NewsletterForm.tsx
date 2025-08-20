@@ -3,18 +3,26 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * NewsletterForm
  * - Minimal email subscription form that posts to /api/newsletter
  * - Client component with basic validation and UX states
+ * - Internationalized via useI18n hook
  */
 export function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string>("");
+  const { t } = useI18n();
 
+  /**
+   * Handle newsletter subscription form submission
+   * - Posts email to API endpoint
+   * - Sets loading and status states based on response
+   */
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!email) return;
@@ -32,11 +40,11 @@ export function NewsletterForm() {
         throw new Error(json.error || "Subscription failed");
       }
       setStatus("success");
-      setMessage("Thanks for subscribing!");
+      setMessage(t("newsletter.success", "Thanks for subscribing!"));
       setEmail("");
     } catch (err: any) {
       setStatus("error");
-      setMessage(err?.message || "Something went wrong");
+      setMessage(err?.message || t("newsletter.error", "Something went wrong"));
     } finally {
       setLoading(false);
     }
@@ -48,13 +56,13 @@ export function NewsletterForm() {
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
+        placeholder={t("newsletter.placeholder", "you@example.com")}
         className="h-10 flex-1"
         aria-label="Email address"
         required
       />
       <Button type="submit" disabled={loading} className="h-10">
-        {loading ? "Subscribing..." : "Subscribe"}
+        {loading ? t("newsletter.button.subscribing", "Subscribing...") : t("newsletter.button.subscribe", "Subscribe")}
       </Button>
       {message && (
         <span

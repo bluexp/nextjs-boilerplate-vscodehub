@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import Script from "next/script";
 import { Star, Share2, ExternalLink, Link as LinkIcon, BookOpen, FileText, Video as VideoIcon, Home, Github } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { createServerTranslator } from "@/lib/i18n-server";
+import type { Language } from "@/lib/i18n";
 
 /**
  * Decode a base64url string to the original URL string.
@@ -55,7 +57,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const url = decodeBase64Url(id);
   const item = await findItemByUrl(url);
-  if (!item) return { title: "Item Not Found" };
+  const { t } = await createServerTranslator("en" as Language);
+  if (!item) return { title: t("item.notFoundTitle", "Item Not Found") };
 
   const siteUrl = getSiteUrl();
   const domain = (() => {
@@ -103,6 +106,10 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
   if (!item) {
     notFound();
   }
+
+  // 基于目标 URL 猜测展示语言，并创建服务器端翻译器
+  const hint = detectLanguageFromUrl(item.url) as Language | undefined;
+  const { t } = await createServerTranslator(hint ?? "en");
 
   // 基础派生信息
   const domain = (() => {
@@ -160,7 +167,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-foreground hover:underline"
             >
-              <Star className="h-4 w-4" /> Star on GitHub
+              <Star className="h-4 w-4" /> {t("button.starOnGitHub", "Star on GitHub")}
             </a>
           )}
         </div>
@@ -168,7 +175,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
         <div className="mt-4 flex flex-wrap gap-2">
           <Button asChild variant="secondary">
             <Link href="/">
-              <Home className="mr-2 h-4 w-4" /> Back to Home
+              <Home className="mr-2 h-4 w-4" /> {t("button.backToHome", "Back to Home")}
             </Link>
           </Button>
           {gh ? (
@@ -177,9 +184,9 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
                 href={`https://github.com/${gh.owner}/${gh.repo}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Open on GitHub"
+                aria-label={t("button.openOnGitHub", "Open on GitHub")}
               >
-                <Github className="mr-2 h-4 w-4" /> Open on GitHub
+                <Github className="mr-2 h-4 w-4" /> {t("button.openOnGitHub", "Open on GitHub")}
                 <ExternalLink className="ml-1 h-4 w-4" />
               </a>
             </Button>
@@ -190,66 +197,88 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
       {/* Meta chips */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <span className="inline-flex items-center rounded-full border border-border/50 bg-card px-2.5 py-1 text-xs text-muted-foreground">
-          Category: {item.category}
+          {t("category.label", "Category:")} {item.category}
         </span>
         {item.subcategory ? (
           <span className="inline-flex items-center rounded-full border border-border/50 bg-card px-2.5 py-1 text-xs text-muted-foreground">
-            Subcategory: {item.subcategory}
+            {t("subcategory.label", "Subcategory:")} {item.subcategory}
           </span>
         ) : null}
         {domain ? (
           <span className="inline-flex items-center rounded-full border border-border/50 bg-card px-2.5 py-1 text-xs text-muted-foreground">
-            Domain: {domain}
+            {t("domain.label", "Domain:")} {domain}
           </span>
         ) : null}
         {gh ? (
           <span className="inline-flex items-center rounded-full border border-border/50 bg-card px-2.5 py-1 text-xs text-muted-foreground">
-            GitHub Repo
+            {t("details.githubRepo", "GitHub Repo")}
           </span>
         ) : null}
       </div>
 
       {/* Description card */}
       <section className="rounded-xl border border-border/50 bg-card/80 p-6 shadow-sm" style={{ display: isContents ? "none" : undefined }}>
-        <h2 className="mb-2 text-lg font-semibold">Description</h2>
-        <p className="leading-relaxed text-muted-foreground">{item.description || "No description provided."}</p>
+        <h2 className="mb-2 text-lg font-semibold">{t("description.title", "Description")}</h2>
+        <p className="leading-relaxed text-muted-foreground">{item.description || t("description.noDescription", "No description provided.")}</p>
 
         {/* Details grid */}
         <div className="mt-4 grid grid-cols-1 gap-3 text-sm text-muted-foreground sm:grid-cols-2">
           {catalogUpdatedAt ? (
             <div>
-              <span className="font-medium text-foreground">Last synced:</span> {formatDate(catalogUpdatedAt)}
+              <div className="text-xs uppercase tracking-wide text-muted-foreground/70">{t("details.lastSynced", "Last synced:")}</div>
+              <div className="font-medium text-foreground">{catalogUpdatedAt}</div>
             </div>
           ) : null}
           {repoMeta?.updatedAt ? (
             <div>
-              <span className="font-medium text-foreground">Repo updated:</span> {formatDate(repoMeta.updatedAt)}
+              <div className="text-xs uppercase tracking-wide text-muted-foreground/70">{t("details.repoUpdated", "Repo updated:")}</div>
+              <div className="font-medium text-foreground">{formatDate(repoMeta?.updatedAt)}</div>
             </div>
           ) : null}
-          {typeof repoMeta?.stars === "number" ? (
-            <div>
-              <span className="font-medium text-foreground">Stars:</span> {formatNumber(repoMeta.stars)}
-            </div>
-          ) : null}
-          {typeof repoMeta?.forks === "number" ? (
-            <div>
-              <span className="font-medium text-foreground">Forks:</span> {formatNumber(repoMeta.forks)}
-            </div>
-          ) : null}
-          {typeof repoMeta?.issues === "number" ? (
-            <div>
-              <span className="font-medium text-foreground">Open issues:</span> {formatNumber(repoMeta.issues)}
-            </div>
-          ) : null}
+          <div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground/70">{t("details.stars", "Stars:")}</div>
+            <div className="font-medium text-foreground">{formatNumber(repoMeta?.stars)}</div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground/70">{t("details.forks", "Forks:")}</div>
+            <div className="font-medium text-foreground">{formatNumber(repoMeta?.forks)}</div>
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wide text-muted-foreground/70">{t("details.openIssues", "Open issues:")}</div>
+            <div className="font-medium text-foreground">{formatNumber(repoMeta?.issues)}</div>
+          </div>
         </div>
       </section>
+
+      {/* Possibly related links section heading */}
+      {related?.length ? (
+        <section className="mt-8">
+          <h2 className="mb-2 text-lg font-semibold">{t("content.relatedLinks", "Related Links")}</h2>
+          <ul className="space-y-2">
+            {related.map((r) => (
+              <li key={r.url}>
+                <Link
+                  href={`/items/${encodeUrlToId(r.url)}`}
+                  className="flex items-start gap-3 rounded-md border border-transparent p-3 hover:border-border/60 hover:bg-accent/40"
+                >
+                  <span className="mt-0.5 inline-block h-2 w-2 rounded-full bg-primary/70" />
+                  <span className="text-sm font-medium text-foreground group-hover:underline">{r.title}</span>
+                </Link>
+                {r.description ? (
+                  <p className="ml-5 mt-1 line-clamp-2 text-xs text-muted-foreground">{r.description}</p>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {/* Contents-specific: Category links only */}
       {isContents ? (
         <>
           {contentCategoryItems.length > 0 ? (
             <section className="mt-6 rounded-xl border border-border/50 bg-card/80 p-6 shadow-sm">
-              <h2 className="mb-4 text-lg font-semibold">All links in {item.title}</h2>
+              <h2 className="mb-4 text-lg font-semibold">{t("content.allLinksIn", "All links in {title}").replace("{title}", item.title)}</h2>
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {contentCategoryItems.map((r) => (
                   <li key={r.url} className="group">
@@ -282,7 +311,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
             description: item.description || undefined,
             isPartOf: {
               "@type": "Collection",
-              name: "VSCodeHub Awesome Catalog",
+              name: t("metadata.title", "VSCodeHub — Awesome Catalog"),
             },
             ...(gh ? { sameAs: [`https://github.com/${gh.owner}/${gh.repo}`] } : {}),
           };

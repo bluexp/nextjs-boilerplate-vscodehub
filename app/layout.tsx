@@ -7,6 +7,10 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { HeaderScrollController } from "@/components/ui/HeaderScrollController";
 import Link from "next/link";
 import Script from "next/script";
+import { I18nProvider } from "@/lib/i18n";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import HtmlLangUpdater from "@/components/HtmlLangUpdater";
+import { createServerTranslator } from "@/lib/i18n-server";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -58,9 +62,9 @@ export const metadata: Metadata = {
 
 /**
  * Global header component with scroll-based transparency on home page.
- * Features brand logo, GitHub link, and theme toggle.
+ * Features brand logo, GitHub link, theme toggle, and language switcher.
  */
-function GlobalHeader() {
+function GlobalHeader({ t }: { t: (k: string, fb?: string) => string }) {
   return (
     <header
       id="global-header"
@@ -70,18 +74,20 @@ function GlobalHeader() {
         <div className="flex h-14 items-center justify-between">
           {/* Use Next.js Link for internal navigation to avoid full reloads */}
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <span className="select-none">Awesome AI Catalog</span>
+            <span className="select-none">{t("header.brand", "Awesome AI Catalog")}</span>
           </Link>
           <div className="flex items-center gap-2">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
             {/* GitHub */}
             <a
               href="https://github.com/bluexp/nextjs-boilerplate-vscodehub"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Open GitHub repository"
+              aria-label={t("aria.openGitHubRepo", "Open GitHub repository")}
               className="inline-flex items-center justify-center whitespace-nowrap rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-3 text-sm font-medium transition-colors"
             >
-              GitHub
+              {t("nav.github", "GitHub")}
             </a>
             <ThemeToggle />
           </div>
@@ -92,14 +98,10 @@ function GlobalHeader() {
 }
 
 /**
- * Root layout component that wraps all pages with theme provider and global header.
+ * Root layout component that wraps all pages with theme provider, i18n provider, and global header.
  * Features global theme toggle and consistent layout structure.
  */
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const websiteLd = {
     "@context": "https://schema.org",
@@ -119,35 +121,45 @@ export default function RootLayout({
     url: siteUrl,
   };
 
+  // Server-side default lang attribute for initial HTML
+  const serverDefaultLang = "en"; // Will be synced on client by HtmlLangUpdater
+
+  // Server-side translator for static strings in layout
+  const { t } = await createServerTranslator("en");
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={serverDefaultLang} suppressHydrationWarning>
       <body className={inter.className}>
-        {/* Skip link for keyboard users */}
-        <a
-          href="#content"
-          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-primary-foreground focus:shadow-lg"
-       >
-          Skip to content
-        </a>
-        {/* Theme provider wraps the entire app */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          {/* Control header transparency on homepage */}
-          <HeaderScrollController />
-          {/* Global Header */}
-          <GlobalHeader />
-          {/* JSON-LD: WebSite and Organization */}
-          <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
-            {JSON.stringify(websiteLd)}
-          </Script>
-          <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
-            {JSON.stringify(orgLd)}
-          </Script>
-          {/* Main content area with landmark and target for skip link */}
-          <main id="content" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
-        </ThemeProvider>
+        <I18nProvider>
+          {/* Keep <html lang> in sync on client */}
+          <HtmlLangUpdater />
+          {/* Skip link for keyboard users */}
+          <a
+            href="#content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-primary-foreground focus:shadow-lg"
+          >
+            {t("header.skipToContent", "Skip to content")}
+          </a>
+          {/* Theme provider wraps the entire app */}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+            {/* Control header transparency on homepage */}
+            <HeaderScrollController />
+            {/* Global Header */}
+            <GlobalHeader t={t} />
+            {/* JSON-LD: WebSite and Organization */}
+            <Script id="ld-website" type="application/ld+json" strategy="afterInteractive">
+              {JSON.stringify(websiteLd)}
+            </Script>
+            <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
+              {JSON.stringify(orgLd)}
+            </Script>
+            {/* Main content area with landmark and target for skip link */}
+            <main id="content" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+          </ThemeProvider>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -21,19 +21,29 @@ interface BreadcrumbsProps {
  * Uses React.memo and useMemo to avoid unnecessary re-renders.
  */
 export const Breadcrumbs = memo(function Breadcrumbs({ items, className }: BreadcrumbsProps) {
-  // Auto-assign icons based on label or position; memoized to avoid recalculation when items unchanged
+  /**
+   * Compute icon for each breadcrumb in an i18n-safe way.
+   * - If caller provides an icon, respect it.
+   * - First item or root path ("/") uses Home icon, regardless of localized label.
+   * - Paths that look like search (e.g., "/search" or containing "/search/") use Search icon.
+   * - Fallback to Folder icon for others.
+   */
   const enhancedItems = useMemo(() => {
     return items.map((item, index) => {
       if (item.icon) return item;
 
-      // Auto-assign icons based on common patterns
-      if (index === 0 || item.label === "Home" || item.href === "/") {
+      // Home: first crumb or explicit root href
+      if (index === 0 || item.href === "/") {
         return { ...item, icon: Home };
       }
-      if (item.label === "Search" || item.label.includes("Search")) {
+
+      // Search: match common search path patterns; avoid label string comparisons for i18n
+      const isSearchPath = /(^|\/)search(\/?|\?|#)/i.test(item.href);
+      if (isSearchPath) {
         return { ...item, icon: Search };
       }
-      // Default category icon for other items
+
+      // Default icon
       return { ...item, icon: Folder };
     });
   }, [items]);

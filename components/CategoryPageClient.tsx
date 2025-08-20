@@ -6,6 +6,7 @@ import { CatalogView } from "@/components/CatalogView";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { ChevronRight, Search } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Perform a case-insensitive match for a query against an item's text fields.
@@ -76,6 +77,7 @@ function buildFilteredCategory(
 export default function CategoryPageClient({ category }: { category: AwesomeCategory }) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"default" | "alpha">("default");
+  const { t } = useI18n();
 
   const filtered = useMemo(() => buildFilteredCategory(category, query, sort), [category, query, sort]);
 
@@ -94,19 +96,19 @@ export default function CategoryPageClient({ category }: { category: AwesomeCate
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search within this category..."
+              placeholder={t("category.searchPlaceholder", "Search within this category...")}
               className="pl-9"
             />
           </div>
           <Button type="submit" className="whitespace-nowrap">
-            Filter
+            {t("category.filter", "Filter")}
             <ChevronRight className="ml-1 h-4 w-4" />
           </Button>
         </form>
 
         <div className="flex items-center gap-2">
           <label htmlFor="sort" className="text-sm text-muted-foreground">
-            Sort
+            {t("category.sort", "Sort")}
           </label>
           <select
             id="sort"
@@ -114,8 +116,8 @@ export default function CategoryPageClient({ category }: { category: AwesomeCate
             onChange={(e) => setSort(e.target.value as any)}
             className="h-9 rounded-md border border-border/60 bg-card px-3 text-sm outline-none ring-0 focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <option value="default">Default order</option>
-            <option value="alpha">Title A→Z</option>
+            <option value="default">{t("category.sortDefault", "Default order")}</option>
+            <option value="alpha">{t("category.sortAlpha", "Title A→Z")}</option>
           </select>
         </div>
       </div>

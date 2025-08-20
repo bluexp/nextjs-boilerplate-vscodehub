@@ -5,10 +5,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import CategoryPageClient from "@/components/CategoryPageClient";
 import Script from "next/script";
+import { createServerTranslator } from "@/lib/i18n-server";
+import type { Language } from "@/lib/i18n";
 
 /**
  * Finds a category by its slug in a tree of categories.
  * Safely return undefined when categories is not defined
+ * @param categories Category tree (possibly undefined)
+ * @param slug Category slug to find
+ * @returns The matched AwesomeCategory or undefined
  */
 function findCategory(
   categories: AwesomeCategory[] | undefined,
@@ -32,6 +37,10 @@ function findCategory(
 /**
  * Find the path from the root to the category with the given slug.
  * Returns the full path from root to the target category (or subcategory) for building breadcrumbs.
+ * @param categories Category tree (possibly undefined)
+ * @param slug Target category slug
+ * @param path Accumulated path (internal use)
+ * @returns Array of categories from root to target, or null if not found
  */
 function findCategoryPath(
   categories: AwesomeCategory[] | undefined,
@@ -51,6 +60,7 @@ function findCategoryPath(
 /**
  * Generates metadata for the category page.
  * Next.js 15 PageProps: params is a Promise; await it inside the function body.
+ * Integrates i18n for the page description.
  */
 export async function generateMetadata({
   params,
@@ -71,8 +81,14 @@ export async function generateMetadata({
     return {};
   }
 
+  // Server-side translator (default to English for metadata)
+  const { t } = await createServerTranslator("en" as Language);
+
   const title = `${category.title} | VSCodeHub`;
-  const description = `A curated list of awesome resources in the ${category.title} category.`;
+  const description = t(
+    "category.description",
+    `A curated list of awesome resources in the {title} category.`,
+  ).replace("{title}", category.title);
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const url = `${siteUrl}/categories/${slug}`;
 
@@ -106,6 +122,7 @@ export async function generateMetadata({
 /**
  * The main component for the category page.
  * Next.js 15 PageProps: params is a Promise; await it inside the function body.
+ * Integrates server-side i18n for breadcrumbs and static texts.
  */
 export default async function CategoryPage({
   params,
@@ -126,8 +143,11 @@ export default async function CategoryPage({
     notFound();
   }
 
+  // Server-side translator for static content
+  const { t } = await createServerTranslator("en" as Language);
+
   const breadcrumbs = [
-    { href: "/", label: "Home" },
+    { href: "/", label: t("breadcrumbs.home", "Home") },
     // Display the full hierarchy from the root to the current node
     ...path!.map((c) => ({ href: `/categories/${c.slug}`, label: c.title })),
   ];
@@ -144,12 +164,17 @@ export default async function CategoryPage({
     })),
   };
 
+  const descriptionText = t(
+    "category.description",
+    `A curated list of awesome resources in the {title} category.`,
+  ).replace("{title}", category!.title);
+
   const collectionLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     name: category!.title,
     url: `${siteUrl}/categories/${slug}`,
-    description: `A curated list of awesome resources in the ${category!.title} category.`,
+    description: descriptionText,
   };
 
   return (
@@ -166,7 +191,7 @@ export default async function CategoryPage({
           {category.title}
         </h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          {`A curated list of awesome resources in the ${category.title} category.`}
+          {descriptionText}
         </p>
       </header>
 
@@ -176,12 +201,17 @@ export default async function CategoryPage({
       </main>
 
       <footer className="mt-12 text-center text-sm text-muted-foreground">
-        <p>Powered by Next.js and Vercel. Data from Awesome Lists on GitHub.</p>
+        <p>{t("pageFooter.poweredBy", "Powered by Next.js and Vercel. Data from Awesome Lists on GitHub.")}</p>
       </footer>
     </div>
   );
 }
 
+/**
+ * Encode a URL to a URL-safe base64-like identifier for use in route params.
+ * @param url Raw URL string
+ * @returns URL-safe base64 identifier
+ */
 function encodeUrlToId(url: string): string {
   try {
     const b64 = Buffer.from(url, "utf8").toString("base64");
