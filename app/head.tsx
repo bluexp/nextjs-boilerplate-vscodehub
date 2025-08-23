@@ -8,14 +8,12 @@ import React from "react";
 export default function Head() {
   return (
     <>
-      {/* Google AdSense global script (only load in production) */}
-      {process.env.NODE_ENV === "production" && (
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2037794469328298"
-          crossOrigin="anonymous"
-        />
-      )}
+      {/* Google AdSense global script: load in all environments for verification/testing */}
+      <script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2037794469328298"
+        crossOrigin="anonymous"
+      />
     </>
   );
 }
