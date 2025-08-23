@@ -162,6 +162,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             <Script id="ld-org" type="application/ld+json" strategy="afterInteractive">
               {JSON.stringify(orgLd)}
             </Script>
+            {/* Google AdSense: global script to enable ads on all pages (only in production) */}
+            {process.env.NODE_ENV === "production" && (
+              <Script
+                id="adsbygoogle-init"
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2037794469328298"
+                crossOrigin="anonymous"
+                strategy="beforeInteractive"
+              />
+            )}
             {/* Main content area with landmark and target for skip link */}
             <main id="content" tabIndex={-1}>
               {children}

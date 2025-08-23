@@ -1,6 +1,6 @@
 # VSCodeHub — Awesome AI Catalog
 [![License: CC0-1.0](https://img.shields.io/badge/License-CC0_1.0-lightgrey.svg)](https://creativecommons.org/publicdomain/zero/1.0/)
-
+该项目是依托GPT-5自动化编程的项目
 This project is built with GPT‑5-assisted automated programming.
 
 An open-source, production‑ready catalog application powered by Next.js App Router and the Edge Runtime. It provides categorized browsing of curated resources, fast full‑text search, theme switching, internationalization (i18n), and a scheduled sync pipeline that parses the upstream Awesome list into a structured catalog stored in Upstash Redis (KV via REST).
@@ -16,7 +16,6 @@ An open-source, production‑ready catalog application powered by Next.js App Ro
 - **Dynamic OG image generation** for enhanced social sharing
 - **Newsletter subscription** with KV storage
 - **SEO optimized** with rich metadata, JSON-LD structured data
-- **Internationalization (i18n)** with server-side language detection and localized metadata
 - **Community contributions** via GitHub Issue templates
 - Health check endpoint suitable for platform monitoring
 - Scheduled sync (Cron) to pull and parse the upstream Awesome list
@@ -28,7 +27,6 @@ An open-source, production‑ready catalog application powered by Next.js App Ro
 - Upstash Redis (KV via REST API)
 - **@vercel/og + satori** for dynamic social image generation
 - Jest + Testing Library for unit tests
-- Built-in i18n (client Context + server-side language detection via headers/cookies)
 
 ## Project Structure (key parts)
 - app/ — App Router pages and API routes
@@ -84,44 +82,6 @@ curl "http://localhost:3000/api/og?title=VSCodeHub&subtitle=Awesome%20AI%20Catal
 ```
 
 ## New Features
-
-### Internationalization (i18n)
-- Supported languages: English (en), Chinese (zh), Spanish (es), Japanese (ja)
-- Server-side language detection:
-  - Reads cookie `language` first (written by client switcher, 1-year max-age)
-  - Falls back to request header `Accept-Language`, parses q-weighted ranges and picks the first supported primary language
-  - Defaults to English (en)
-- Client language switching:
-  - Component: `<LanguageSwitcher />` (in global header)
-  - Persists to localStorage and cookie to keep SSR/CSR consistent on refresh
-  - `<HtmlLangUpdater />` syncs `<html lang>` on the client
-- Server-side translations:
-  - `createServerTranslator()` returns `t(key, fallback?, vars?)` and the current language
-  - `getServerTranslation(key, lang?, fallback?, vars?)` for quick lookups in `generateMetadata` and similar (supports interpolation)
-- Localized metadata:
-  - Homepage and category pages include localized title, description, OpenGraph, and Twitter fields
-  - Dynamic OG image `/api/og` uses localized title automatically
-- Translation interpolation (NEW):
-  - Placeholders like `{query}` in locale strings are replaced by values you pass via `vars`.
-  - Examples:
-    - Client:
-      ```ts
-      // Client example with useI18n()
-      const { t } = useI18n();
-      const title = t("search.results", undefined, { query: searchQuery });
-      ```
-    - Server:
-      ```ts
-      // Server example with createServerTranslator()
-      const { t } = await createServerTranslator();
-      const title = t("search.noResults", "No results", { query });
-      ```
-    - Metadata:
-      ```ts
-      // Server helper for metadata and static places
-      const title = await getServerTranslation("search.results", "en", undefined, { query: "book" });
-      ```
-
 
 ### Dynamic OG Images
 - **Endpoint**: `/api/og` with query parameters `title` and `subtitle`
@@ -270,8 +230,6 @@ The application includes comprehensive SEO optimization:
 - GitHub rate limit: set `GITHUB_TOKEN` to increase API limits for the sync pipeline
 - **OG images not loading**: Check Edge Runtime deployment and image URL format
 - **Newsletter not working**: Verify KV connection and check browser console for errors
-- Route marked as "dynamic": Using `headers()/cookies()` for language detection makes affected routes dynamic; this is expected in Next.js
-- Test i18n: After switching language, refresh and verify `<html lang>`, on-page copy, and metadata (OG/Twitter) are localized
 
 ## Testing
 - Run unit tests with Jest: `npm test`
