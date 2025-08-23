@@ -67,6 +67,11 @@ export async function generateMetadata(): Promise<Metadata> {
       index: true,
       follow: true,
     },
+    // Google AdSense site association meta
+    // Ensures <meta name="google-adsense-account" content="..."> is present in <head> for all pages
+    other: {
+      "google-adsense-account": "ca-pub-2037794469328298",
+    },
   };
 }
 

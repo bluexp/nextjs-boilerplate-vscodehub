@@ -8,9 +8,6 @@ import React from "react";
 export default function Head() {
   return (
     <>
-      {/* Google AdSense site association meta tag: must be present in <head> on every page */}
-      <meta name="google-adsense-account" content="ca-pub-2037794469328298" />
-
       {/* Google AdSense global script (only load in production) */}
       {process.env.NODE_ENV === "production" && (
         <script
