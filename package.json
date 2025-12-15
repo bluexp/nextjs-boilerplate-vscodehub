@@ -4,8 +4,19 @@
   "private": true,
   "license": "CC0-1.0",
   "scripts": {
-    "serve": "npx http-server ."
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "next": "^16.0.10",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "25.0.2",
+    "@types/react": "19.2.7",
+    "typescript": "5.9.3"
+  }
 }
