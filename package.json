@@ -1,28 +1,11 @@
 {
-  "name": "nextjs",
-  "version": "0.1.0",
+  "name": "static-site",
+  "version": "1.0.0",
   "private": true,
   "license": "CC0-1.0",
   "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "test": "jest"
+    "serve": "npx http-server ."
   },
-  "dependencies": {
-    "next": "15.4.6",
-    "react": "19.1.0",
-    "react-dom": "19.1.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "9.33.0",
-    "eslint-config-next": "15.4.7",
-    "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }
